@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Comprehensive SEO Meta Tags -->
+  <title>Read Pride and Prejudice by Jane Austen | The Public Domain Archive</title>
+  <meta name="description" content="Read the full text of Pride and Prejudice by Jane Austen. Explore the classic romantic novel following Elizabeth Bennet and Mr. Darcy, completely free in the public domain.">
+  <meta name="author" content="Jane Austen">
+  <meta name="keywords" content="Pride and Prejudice, Jane Austen, classic literature, public domain books, read free online, Elizabeth Bennet, Mr. Darcy, romance novel">
+
+  <!-- Open Graph for Social Sharing -->
+  <meta property="og:title" content="Pride and Prejudice by Jane Austen">
+  <meta property="og:description" content="Explore the timeless classic following Elizabeth Bennet and Mr. Darcy. Read the full text for free.">
+  <meta property="og:type" content="book">
+
+  <style>
+    /* --- CSS VARIABLES & MINIMALIST PALETTE (Matched to Homepage) --- */
+    :root {
+      --color-bg: #fcfcfc;
+      --color-text: #1a1a1a;
+      --color-text-muted: #737373;
+      --color-accent: #8b0000;
+      --color-border: #eaeaea;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-serif: "Georgia", "Times New Roman", serif;
+
+      --spacing-sm: 0.5rem;
+      --spacing-base: 1rem;
+      --spacing-lg: 3rem;
+      --spacing-xl: 6rem;
+    }
+
+    /* --- GLOBAL RESET & TYPOGRAPHY --- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-sans);
+      line-height: 1.8;
+      /* Slightly looser line-height for long-form reading */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* --- LAYOUT --- */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: var(--spacing-lg) var(--spacing-base) 0;
+    }
+
+    /* --- NAVIGATION --- */
+    .back-link {
+      display: inline-block;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--spacing-lg);
+      transition: color 0.3s ease;
+    }
+
+    .back-link:hover {
+      color: var(--color-text);
+    }
+
+    /* --- BOOK HEADER --- */
+    .book-header {
+      margin-bottom: var(--spacing-lg);
+      text-align: center;
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: 3rem;
+      font-weight: normal;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .author-name {
+      font-size: 1.1rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* --- METADATA FOR SEO --- */
+    .book-meta {
+      display: flex;
+      flex-direction: column;
+      border-radius: 0.4rem;
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-base) 0;
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .meta-label {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.2rem;
+    }
+
+    .meta-value {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+
+    /* --- CALL TO ACTION --- */
+    .cta-container {
+      text-align: center;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background-color: var(--color-accent);
+      color: var(--color-bg);
+      padding: 1rem 2.5rem;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      text-decoration: none;
+      border-radius: 40px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: #600000;
+      /* Darker crimson */
+      transform: translateY(-2px);
+    }
+
+    /* --- CONTENT SECTIONS --- */
+    .content-section {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    h2.section-title {
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 0.5rem;
+    }
+
+    .content-section p {
+      margin-top: 1.2rem;
+      font-size: 1.05rem;
+    }
+
+    /* --- EXCERPT CALLOUT --- */
+    .book-excerpt {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      line-height: 1.8;
+      color: var(--color-text);
+      font-style: italic;
+      text-align: center;
+      margin: 0 0 var(--spacing-lg);
+      padding: 0 2rem;
+    }
+
+    .book-excerpt::before {
+      content: "“";
+      font-size: 3rem;
+      color: var(--color-border);
+      display: block;
+      margin-bottom: -1.5rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <a href="index.html" class="back-link">← Back to Archive</a>
+
+    <header class="book-header">
+      <h1>Pride and Prejudice</h1>
+      <div class="author-name">By Jane Austen</div>
+    </header>
+
+    <!-- Structured SEO Metadata -->
+    <div class="book-meta">
+      <div class="meta-item">
+        <span class="meta-label">Published</span>
+        <span class="meta-value">1813</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Genre</span>
+        <span class="meta-value">Romance</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Language</span>
+        <span class="meta-value">English</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Status</span>
+        <span class="meta-value">Public Domain</span>
+      </div>
+    </div>
+
+    <!-- Primary Action -->
+    <div class="cta-container">
+      <a href="#read-book-url" class="btn-primary">Start Reading</a>
+    </div>
+
+    <!-- Famous Quote / Excerpt -->
+    <blockquote class="book-excerpt">
+      It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.
+    </blockquote>
+
+    <main>
+      <!-- Synopsis Section -->
+      <section class="content-section">
+        <h2 class="section-title">Synopsis</h2>
+        <p>
+          Set in rural England in the early 19th century, <em>Pride and Prejudice</em> follows the turbulent relationship between Elizabeth Bennet, the daughter of a country gentleman, and Fitzwilliam Darcy, a rich aristocratic landowner. The novel masterfully explores themes of manners, upbringing, morality, education, and marriage in the society of the landed gentry of the British Regency.
+        </p>
+        <p>
+          Mr. Bennet of Longbourn estate has five daughters, but his property is entailed, meaning that none of the girls can inherit it. His wife has no fortune, so it is imperative that at least one of the girls marry well to support the others upon his death. The arrival of the wealthy and eligible Mr. Bingley, along with his aloof friend Mr. Darcy, sets the story in motion, sparking a comedy of manners that has captivated readers for centuries.
+        </p>
+      </section>
+
+      <!-- Author Bio Section -->
+      <section class="content-section">
+        <h2 class="section-title">About the Author</h2>
+        <p>
+          <strong>Jane Austen</strong> (16 December 1775 – 18 July 1817) was an English novelist known primarily for her six major novels, which interpret, critique, and comment upon the British landed gentry at the end of the 18th century. Austen's plots often explore the dependence of women on marriage in the pursuit of favorable social standing and economic security.
+        </p>
+        <p>
+          Published anonymously during her lifetime, her works gained little personal fame. However, the transition of her works into the public domain and subsequent literary analysis have cemented her as one of the most beloved and critically acclaimed writers in English literary history.
+        </p>
+      </section>
+    </main>
+
+  </div>
+
+</body>
+
+</html>

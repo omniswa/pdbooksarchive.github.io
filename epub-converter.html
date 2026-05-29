@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPUB Converter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      font-display: swap;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #F5F0E8;
+      --surface: #FDFAF5;
+      --surface2: #EDE8DF;
+      --ink: #1C1710;
+      --ink2: #6B6055;
+      --accent: #B85C2A;
+      --accent-light: #F0E4DA;
+      --accent-dark: #8A3F18;
+      --border: #DDD5C5;
+      --success: #3A7D55;
+      --success-bg: #E8F4EE;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Karla', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 1rem 4rem;
+    }
+
+    /* Subtle paper texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      padding: 3.5rem 0 2.5rem;
+    }
+
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      background: var(--ink);
+      border-radius: 4px;
+      margin-bottom: 1.2rem;
+    }
+
+    .logo-mark svg {
+      color: var(--bg);
+    }
+
+    header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.6rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    header h1 span {
+      color: var(--accent);
+    }
+
+    header p {
+      font-size: 0.92rem;
+      color: var(--ink2);
+      font-weight: 400;
+      letter-spacing: 0.01em;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    /* DROP ZONE */
+    #drop-zone {
+      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    #drop-zone:hover,
+    #drop-zone.drag-over {
+      background: var(--accent-light);
+    }
+
+    #drop-zone.drag-over {
+      border-color: var(--accent);
+    }
+
+    #drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .drop-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--surface2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    #drop-zone:hover .drop-icon {
+      background: var(--accent-light);
+      transform: translateY(-2px);
+    }
+
+    .drop-icon svg {
+      color: var(--ink2);
+    }
+
+    #drop-zone h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    #drop-zone p {
+      font-size: 0.82rem;
+      color: var(--ink2);
+    }
+
+    #drop-zone p span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--ink2);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    /* FILE SELECTED STATE */
+    #file-info {
+      display: none;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--success-bg);
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    #file-info.visible {
+      display: flex;
+    }
+
+    .file-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--success);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .file-icon svg {
+      color: white;
+    }
+
+    #file-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 320px;
+    }
+
+    #file-size {
+      font-size: 0.78rem;
+      color: var(--ink2);
+    }
+
+    .clear-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--ink2);
+      padding: 0.25rem;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s;
+    }
+
+    .clear-btn:hover {
+      color: var(--accent);
+    }
+
+    /* OPTIONS */
+    .options-grid {
+      padding: 1.5rem;
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .option-group label.group-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink2);
+      margin-bottom: 0.6rem;
+    }
+
+    .toggle-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .toggle-group.tri {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .toggle-btn {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .toggle-btn input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-btn span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.65rem 0.5rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--ink2);
+      background: var(--surface2);
+      transition: all 0.15s;
+      text-align: center;
+      user-select: none;
+    }
+
+    .toggle-btn input:checked+span {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent-dark);
+      font-weight: 600;
+    }
+
+    .toggle-btn span:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* DIVIDER */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 1.5rem;
+    }
+
+    /* CONVERT BUTTON */
+    .action-area {
+      padding: 1.5rem;
+    }
+
+    #convert-btn {
+      width: 100%;
+      padding: 0.9rem;
+      background: var(--ink);
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      font-family: 'Karla', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.1s, box-shadow 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    #convert-btn:hover:not(:disabled) {
+      background: var(--accent);
+      box-shadow: 0 4px 14px rgba(184, 92, 42, 0.35);
+    }
+
+    #convert-btn:active:not(:disabled) {
+      transform: scale(0.99);
+    }
+
+    #convert-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* PROGRESS */
+    #progress-area {
+      display: none;
+      padding: 0 1.5rem 1.5rem;
+    }
+
+    #progress-area.visible {
+      display: block;
+    }
+
+    .progress-bar-wrap {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 0.6rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    #progress-text {
+      font-size: 0.8rem;
+      color: var(--ink2);
+      text-align: center;
+    }
+
+    /* RESULT */
+    #result-area {
+      display: none;
+      margin-top: 1.25rem;
+    }
+
+    #result-area.visible {
+      display: block;
+    }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .result-header {
+      padding: 1.1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      background: var(--success-bg);
+    }
+
+    .result-header svg {
+      color: var(--success);
+      flex-shrink: 0;
+    }
+
+    .result-header h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .result-header p {
+      font-size: 0.78rem;
+      color: var(--ink2);
+    }
+
+    .result-body {
+      padding: 1.25rem 1.5rem;
+    }
+
+    .result-meta {
+      display: grid;
+      gap: 1.5rem;
+      grid-template-columns: auto auto;
+      margin-bottom: 1.25rem;
+    }
+
+    .meta-item {
+      font-size: 0.82rem;
+    }
+
+    .meta-item strong {
+      display: block;
+      color: var(--ink2);
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.15rem;
+    }
+
+    .download-btn {
+      width: 100%;
+      padding: 0.8rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Karla', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .download-btn:hover {
+      background: var(--accent-dark);
+      box-shadow: 0 4px 14px rgba(184, 92, 42, 0.3);
+    }
+
+    /* CHAPTER LIST PREVIEW */
+    .chapter-list {
+      max-height: 160px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .chapter-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink2);
+    }
+
+    .chapter-item:last-child {
+      border-bottom: none;
+    }
+
+    .chapter-num {
+      width: 20px;
+      height: 20px;
+      background: var(--surface2);
+      border-radius: 3px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink2);
+      flex-shrink: 0;
+    }
+
+    .chapter-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--ink);
+    }
+
+    .chapter-size {
+      font-size: 0.72rem;
+      color: var(--ink2);
+    }
+
+    /* ERROR */
+    #error-area {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem 1.25rem;
+      background: #FEF2F0;
+      border: 1px solid #F5C5BB;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #8B2E1E;
+      display: none;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+
+    #error-area.visible {
+      display: flex;
+    }
+
+    /* FOOTER */
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--ink2);
+      opacity: 0.7;
+    }
+
+    @media (max-width: 500px) {
+      header h1 {
+        font-size: 2rem;
+      }
+
+      .toggle-group {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .toggle-group.tri {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrap">
+
+    <header>
+      <div class="logo-mark">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+      </div>
+      <h1>EPUB <span>CONVERTER</span></h1>
+      <p>Transform your EPUB files into plain text or HTML — your way.</p>
+    </header>
+
+    <div class="card">
+      <!-- Drop Zone -->
+      <div id="drop-zone">
+        <input type="file" id="file-input" accept=".epub">
+        <div class="drop-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+        </div>
+        <h3>Drop your EPUB here</h3>
+        <p>or <span>browse to upload</span></p>
+        <span class="badge">.epub files only</span>
+      </div>
+
+      <!-- File Info -->
+      <div id="file-info">
+        <div class="file-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <div>
+          <div id="file-name">—</div>
+          <div id="file-size">—</div>
+        </div>
+        <button class="clear-btn" id="clear-btn" title="Remove file">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Options -->
+      <div class="options-grid">
+        <div class="option-group">
+          <label class="group-label">Output Format</label>
+          <div class="toggle-group">
+            <label class="toggle-btn">
+              <input type="radio" name="format" value="txt" checked>
+              <span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <polyline points="10 9 9 9 8 9" />
+                </svg>
+                Text (.txt)
+              </span>
+            </label>
+            <label class="toggle-btn">
+              <input type="radio" name="format" value="html">
+              <span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6" />
+                  <polyline points="8 6 2 12 8 18" />
+                </svg>
+                HTML (.html)
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="option-group">
+          <label class="group-label">Output Structure</label>
+          <div class="toggle-group">
+            <label class="toggle-btn">
+              <input type="radio" name="structure" value="single" checked>
+              <span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Single File
+              </span>
+            </label>
+            <label class="toggle-btn">
+              <input type="radio" name="structure" value="multiple">
+              <span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                </svg>
+                Multiple Files
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="action-area">
+        <button id="convert-btn" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
+          Convert EPUB
+        </button>
+      </div>
+
+      <!-- Progress -->
+      <div id="progress-area">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div id="progress-text">Reading EPUB…</div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="error-area">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span id="error-text">Something went wrong.</span>
+    </div>
+
+    <!-- Result -->
+    <div id="result-area">
+      <div class="result-card">
+        <div class="result-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+          <div>
+            <h3>Conversion Complete</h3>
+            <p id="result-subtitle">Ready to download</p>
+          </div>
+        </div>
+        <div class="result-body">
+          <div class="result-meta">
+            <div class="meta-item"><strong>Title</strong><span id="meta-title">—</span></div>
+            <div class="meta-item"><strong>Author</strong><span id="meta-author">—</span></div>
+            <div class="meta-item"><strong>Chapters</strong><span id="meta-chapters">—</span></div>
+            <div class="meta-item"><strong>Format</strong><span id="meta-format">—</span></div>
+          </div>
+          <div id="chapter-list-wrap" class="chapter-list"></div>
+          <button class="download-btn" id="download-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span id="download-label">Download</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      All processing happens locally in your browser. No files are uploaded to any server.
+    </footer>
+  </div>
+
+  <script>
+    // ── State ──────────────────────────────────────────────────────────────────
+    let currentFile = null;
+    let downloadAction = null;
+
+    // ── DOM Refs ───────────────────────────────────────────────────────────────
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileInfo = document.getElementById('file-info');
+    const fileNameEl = document.getElementById('file-name');
+    const fileSizeEl = document.getElementById('file-size');
+    const clearBtn = document.getElementById('clear-btn');
+    const convertBtn = document.getElementById('convert-btn');
+    const progressArea = document.getElementById('progress-area');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const resultArea = document.getElementById('result-area');
+    const errorArea = document.getElementById('error-area');
+    const errorText = document.getElementById('error-text');
+    const downloadBtn = document.getElementById('download-btn');
+
+    // ── File Handling ──────────────────────────────────────────────────────────
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f) setFile(f);
+    });
+    fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+
+    clearBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      clearFile();
+    });
+
+    function setFile(f) {
+      if (!f.name.toLowerCase().endsWith('.epub')) {
+        showError('Please upload a valid .epub file.');
+        return;
+      }
+      hideError();
+      currentFile = f;
+      fileNameEl.textContent = f.name;
+      fileSizeEl.textContent = formatBytes(f.size);
+      fileInfo.classList.add('visible');
+      convertBtn.disabled = false;
+      resultArea.classList.remove('visible');
+    }
+
+    function clearFile() {
+      currentFile = null;
+      fileInput.value = '';
+      fileInfo.classList.remove('visible');
+      convertBtn.disabled = true;
+      resultArea.classList.remove('visible');
+      hideError();
+      hideProgress();
+    }
+
+    function formatBytes(b) {
+      if (b < 1024) return b + ' B';
+      if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+      return (b / 1048576).toFixed(1) + ' MB';
+    }
+
+    // ── UI Helpers ─────────────────────────────────────────────────────────────
+    function showError(msg) {
+      errorText.textContent = msg;
+      errorArea.classList.add('visible');
+    }
+
+    function hideError() { errorArea.classList.remove('visible'); }
+
+    function setProgress(pct, msg) {
+      progressArea.classList.add('visible');
+      progressFill.style.width = pct + '%';
+      progressText.textContent = msg;
+    }
+
+    function hideProgress() {
+      progressArea.classList.remove('visible');
+      progressFill.style.width = '0%';
+    }
+
+    // ── EPUB Parsing ───────────────────────────────────────────────────────────
+    async function parseEpub(file) {
+      const zip = await JSZip.loadAsync(file);
+      const parser = new DOMParser();
+
+      // 1. Read container.xml → find OPF path
+      const containerXml = await zip.file('META-INF/container.xml').async('text');
+      const containerDoc = parser.parseFromString(containerXml, 'application/xml');
+      const opfPath = containerDoc.querySelector('rootfile').getAttribute('full-path');
+      const opfDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
+
+      // 2. Parse OPF
+      const opfXml = await zip.file(opfPath).async('text');
+      const opfDoc = parser.parseFromString(opfXml, 'application/xml');
+
+      // Metadata
+      const getTag = (tag) => {
+        const el = opfDoc.querySelector(tag) || opfDoc.querySelector(`*|${tag}`);
+        return el ? el.textContent.trim() : '';
+      };
+      const title = getTag('title') || getTag('dc\\:title') || 'Unknown Title';
+      const author = getTag('creator') || getTag('dc\\:creator') || 'Unknown Author';
+
+      // Build manifest map
+      const manifest = {};
+      opfDoc.querySelectorAll('manifest item, item').forEach(item => {
+        manifest[item.getAttribute('id')] = {
+          href: item.getAttribute('href'),
+          type: item.getAttribute('media-type') || ''
+        };
+      });
+
+      // Spine order
+      const spineItems = [];
+      opfDoc.querySelectorAll('spine itemref, itemref').forEach(ref => {
+        const id = ref.getAttribute('idref');
+        if (manifest[id] && manifest[id].type.includes('html')) {
+          spineItems.push({ id, href: opfDir + manifest[id].href });
+        }
+      });
+
+      // 3. Extract chapters
+      const chapters = [];
+      for (let i = 0; i < spineItems.length; i++) {
+        const { href } = spineItems[i];
+        // Normalize path (handle ../ etc.)
+        const normalized = normalizePath(href);
+        const fileInZip = zip.file(normalized) || zip.file(href);
+        if (!fileInZip) continue;
+        const html = await fileInZip.async('text');
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Try to get a title from heading
+        const h = doc.querySelector('h1, h2, h3, h4');
+        const chapterTitle = h ? h.textContent.trim() : `Chapter ${chapters.length + 1}`;
+
+        // Get body content
+        const body = doc.querySelector('body');
+        const bodyHtml = body ? body.innerHTML : html;
+        const bodyText = body ? extractText(body) : stripTags(html);
+
+        chapters.push({ title: chapterTitle, html: bodyHtml, text: bodyText, href });
+      }
+
+      return { title, author, chapters };
+    }
+
+    function normalizePath(path) {
+      const parts = path.split('/');
+      const out = [];
+      for (const p of parts) {
+        if (p === '..') out.pop();
+        else if (p && p !== '.') out.push(p);
+      }
+      return out.join('/');
+    }
+
+    function extractText(el) {
+      let text = '';
+      for (const node of el.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          text += node.textContent;
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          const tag = node.tagName.toLowerCase();
+          if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)) {
+            text += '\n\n' + node.textContent.trim() + '\n' + '─'.repeat(Math.min(node.textContent.trim().length, 60)) + '\n\n';
+          } else if (tag === 'p') {
+            const t = node.textContent.trim();
+            if (t) text += '\n' + t + '\n';
+          } else if (['br'].includes(tag)) {
+            text += '\n';
+          } else if (['script', 'style', 'nav', 'aside'].includes(tag)) {
+            // skip
+          } else {
+            text += extractText(node);
+          }
+        }
+      }
+      return text;
+    }
+
+    function stripTags(html) {
+      const d = document.createElement('div');
+      d.innerHTML = html;
+      return d.textContent || '';
+    }
+
+    // ── Convert & Download ─────────────────────────────────────────────────────
+    convertBtn.addEventListener('click', async () => {
+      if (!currentFile) return;
+      hideError();
+      resultArea.classList.remove('visible');
+      convertBtn.disabled = true;
+      setProgress(10, 'Reading EPUB file…');
+
+      try {
+        setProgress(25, 'Parsing book structure…');
+        const { title, author, chapters } = await parseEpub(currentFile);
+
+        if (chapters.length === 0) {
+          throw new Error('No readable content found in this EPUB. The file may be DRM-protected or use an unsupported format.');
+        }
+
+        setProgress(60, `Processing ${chapters.length} chapters…`);
+
+        const format = document.querySelector('input[name="format"]:checked').value;
+        const structure = document.querySelector('input[name="structure"]:checked').value;
+
+        setProgress(80, 'Generating output…');
+
+        let blob, filename;
+
+        if (structure === 'single') {
+          if (format === 'txt') {
+            const content = chapters.map(ch =>
+              `\n${'═'.repeat(60)}\n${ch.title}\n${'═'.repeat(60)}\n\n${ch.text.trim()}\n`
+            ).join('\n');
+            const header = `${title}\nby ${author}\n${'═'.repeat(60)}\n`;
+            blob = new Blob([header + content], { type: 'text/plain; charset=utf-8' });
+            filename = sanitize(title) + '.txt';
+          } else {
+            const body = chapters.map((ch, i) =>
+              `<article id="chapter-${i+1}" class="chapter">
+  <h2>${escHtml(ch.title)}</h2>
+  <div class="chapter-body">${ch.html}</div>
+</article>`
+            ).join('\n<hr class="chapter-break">\n');
+            const fullHtml = buildHtmlDoc(title, author, body);
+            blob = new Blob([fullHtml], { type: 'text/html; charset=utf-8' });
+            filename = sanitize(title) + '.html';
+          }
+        } else {
+          // Multiple files → ZIP
+          const outZip = new JSZip();
+          const folder = outZip.folder(sanitize(title));
+          const padLen = String(chapters.length).length;
+
+          chapters.forEach((ch, i) => {
+            const num = String(i + 1).padStart(padLen, '0');
+            const fname = `${num}_${sanitize(ch.title)}`;
+            if (format === 'txt') {
+              const content = `${ch.title}\n${'─'.repeat(ch.title.length)}\n\n${ch.text.trim()}`;
+              folder.file(fname + '.txt', content);
+            } else {
+              const chHtml = buildHtmlDoc(ch.title, author,
+                `<article class="chapter"><h1>${escHtml(ch.title)}</h1><div class="chapter-body">${ch.html}</div></article>`
+              );
+              folder.file(fname + '.html', chHtml);
+            }
+          });
+
+          setProgress(90, 'Packaging ZIP…');
+          blob = await outZip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+          filename = sanitize(title) + '_chapters.zip';
+        }
+
+        setProgress(100, 'Done!');
+
+        // Populate result
+        document.getElementById('meta-title').textContent = title;
+        document.getElementById('meta-author').textContent = author;
+        document.getElementById('meta-chapters').textContent = chapters.length;
+        document.getElementById('meta-format').textContent = structure === 'single' ?
+          `Single ${format.toUpperCase()} file` :
+          `${chapters.length} ${format.toUpperCase()} files (ZIP)`;
+        document.getElementById('result-subtitle').textContent = `${filename} · ${formatBytes(blob.size)}`;
+        document.getElementById('download-label').textContent = `Download ${filename}`;
+
+        const listEl = document.getElementById('chapter-list-wrap');
+        listEl.innerHTML = chapters.map((ch, i) => `
+      <div class="chapter-item">
+        <div class="chapter-num">${i+1}</div>
+        <div class="chapter-title">${escHtml(ch.title)}</div>
+        <div class="chapter-size">${formatBytes(new Blob([format === 'txt' ? ch.text : ch.html]).size)}</div>
+      </div>`).join('');
+
+        // Store download action
+        downloadAction = () => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = filename;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        };
+
+        setTimeout(() => {
+          hideProgress();
+          resultArea.classList.add('visible');
+          convertBtn.disabled = false;
+          resultArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 400);
+
+      } catch (err) {
+        console.error(err);
+        hideProgress();
+        showError(err.message || 'Conversion failed. Please check your EPUB file and try again.');
+        convertBtn.disabled = false;
+      }
+    });
+
+    downloadBtn.addEventListener('click', () => { if (downloadAction) downloadAction(); });
+
+    // ── HTML Template ──────────────────────────────────────────────────────────
+    function buildHtmlDoc(title, author, bodyContent) {
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(title)}</title>
+<style>
+  body { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; font-family: Georgia, 'Times New Roman', serif; font-size: 1.05rem; line-height: 1.75; color: #1a1612; background: #fdfaf5; }
+  h1, h2, h3 { font-family: Georgia, serif; line-height: 1.2; }
+  .book-header { text-align: center; padding: 3rem 0 2rem; border-bottom: 2px solid #1a1612; margin-bottom: 3rem; }
+  .book-header h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+  .book-header p { color: #6b6055; font-style: italic; }
+  .chapter { margin: 3rem 0; }
+  .chapter h1, .chapter h2 { font-size: 1.6rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #ddd5c5; }
+  p { margin: 0 0 1rem; }
+  .chapter-break { border: none; border-top: 1px solid #ddd5c5; margin: 3rem 0; }
+  img { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<div class="book-header">
+  <h1>${escHtml(title)}</h1>
+  <p>by ${escHtml(author)}</p>
+</div>
+${bodyContent}
+</body>
+</html>`;
+    }
+
+    // ── Utilities ──────────────────────────────────────────────────────────────
+    function escHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function sanitize(s) {
+      return String(s).replace(/[^\w\s\-]/g, '').replace(/\s+/g, '_').substring(0, 60) || 'book';
+    }
+  </script>
+</body>
+
+</html>

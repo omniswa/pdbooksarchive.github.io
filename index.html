@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Public Domain Books Archive</title>
+  <style>
+    /* --- CSS VARIABLES & MINIMALIST PALETTE --- */
+    :root {
+      --color-bg: #fcfcfc;
+      --color-text: #1a1a1a;
+      --color-text-muted: #737373;
+      --color-accent: #8b0000;
+      /* Minimalist deep crimson */
+      --color-border: #eaeaea;
+
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-serif: "Georgia", "Times New Roman", serif;
+
+      --spacing-base: 1rem;
+      --spacing-lg: 3rem;
+      --spacing-xl: 6rem;
+    }
+
+    /* --- GLOBAL RESET & TYPOGRAPHY --- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* --- LAYOUT & WHITESPACE --- */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: var(--spacing-lg) var(--spacing-base);
+    }
+
+    /* --- HEADER --- */
+    header {
+      margin-bottom: var(--spacing-xl);
+      text-align: center;
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: 2.5rem;
+      font-weight: normal;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--spacing-base);
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0 1.4rem;
+    }
+
+    /* --- CONTROLS (SEARCH & FILTER) --- */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    @media(min-width: 600px) {
+      .controls {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .search-wrapper {
+      flex-grow: 1;
+      position: relative;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.8rem 0;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--color-border);
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      color: var(--color-text);
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-bottom-color: var(--color-text);
+    }
+
+    input[type="text"]::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    .btn {
+      background: transparent;
+      border: 1px solid var(--color-border);
+      padding: 0.6rem 1.2rem;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      color: var(--color-text);
+      cursor: pointer;
+      border-radius: 40px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .btn:hover {
+      border-color: var(--color-text);
+    }
+
+    .btn.active {
+      background-color: var(--color-text);
+      color: var(--color-bg);
+      border-color: var(--color-text);
+    }
+
+    /* --- BOOK LIST --- */
+    .book-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xl);
+      /* Ample whitespace between items */
+      min-height: 50vh;
+    }
+
+    .book-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .book-title {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: normal;
+      line-height: 1.2;
+    }
+
+    .book-author {
+      font-size: 0.95rem;
+      color: var(--color-text-muted);
+    }
+
+    .book-excerpt {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      line-height: 1.8;
+      color: var(--color-text-muted);
+      font-style: italic;
+      border-left: 2px solid var(--color-border);
+      padding-left: 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .book-actions {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .link-read {
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      color: var(--color-text);
+      text-decoration: none;
+      border-bottom: 1px solid var(--color-text);
+      padding-bottom: 2px;
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    .link-read:hover {
+      color: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+
+    .btn-fav {
+      background: none;
+      border: none;
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: color 0.3s ease;
+    }
+
+    .btn-fav:hover {
+      color: var(--color-text);
+    }
+
+    .btn-fav.favorited {
+      color: var(--color-accent);
+    }
+
+    /* --- PAGINATION --- */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: var(--spacing-xl);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--color-border);
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+    }
+
+    .pagination button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-text);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: opacity 0.3s ease;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* --- EMPTY STATE --- */
+    .empty-state {
+      text-align: center;
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      color: var(--color-text-muted);
+      font-style: italic;
+      padding: var(--spacing-lg) 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Public Domain Books Archive</h1>
+      <div class="subtitle">A Curated Collection of Classic Literature</div>
+    </header>
+
+    <main>
+      <div class="controls">
+        <div class="search-wrapper">
+          <input type="text" id="searchInput" placeholder="Search by title or author..." autocomplete="off">
+        </div>
+        <button id="toggleFavoritesBtn" class="btn">View Favorites</button>
+      </div>
+
+      <div id="bookList" class="book-list">
+        <!-- Book content injected via JS -->
+      </div>
+
+      <div class="pagination">
+        <button id="prevBtn" disabled>Prev</button>
+        <span id="pageInfo">1 of 1</span>
+        <button id="nextBtn">Next</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const booksData = [
+      { id: 1, title: "Pride and Prejudice", author: "Jane Austen", excerpt: "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.", link: "#" },
+      { id: 2, title: "Moby-Dick", author: "Herman Melville", excerpt: "Call me Ishmael. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little...", link: "#" },
+      { id: 3, title: "Frankenstein", author: "Mary Shelley", excerpt: "You will rejoice to hear that no disaster has accompanied the commencement of an enterprise which you have regarded with such evil forebodings.", link: "#" },
+      { id: 4, title: "The Great Gatsby", author: "F. Scott Fitzgerald", excerpt: "In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since.", link: "#" },
+      { id: 5, title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", excerpt: "Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do...", link: "#" },
+      { id: 6, title: "Dracula", author: "Bram Stoker", excerpt: "3 May. Bistritz.—Left Munich at 8:35 P. M., on 1st May, arriving at Vienna early next morning; should have arrived at 6:46, but train was an hour late.", link: "#" },
+      { id: 7, title: "The Picture of Dorian Gray", author: "Oscar Wilde", excerpt: "The studio was filled with the rich odour of roses, and when the light summer wind stirred amidst the trees of the garden...", link: "#" },
+      { id: 8, title: "A Tale of Two Cities", author: "Charles Dickens", excerpt: "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness...", link: "#" },
+      { id: 9, title: "Crime and Punishment", author: "Fyodor Dostoevsky", excerpt: "On an exceptionally hot evening early in July a young man came out of the garret in which he lodged in S. Place...", link: "#" },
+      { id: 10, title: "Jane Eyre", author: "Charlotte Brontë", excerpt: "There was no possibility of taking a walk that day. We had been wandering, indeed, in the leafless shrubbery an hour in the morning...", link: "#" }
+  ];
+
+    let filteredBooks = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let showOnlyFavorites = false;
+
+    // favorites is now: [{ id: 1, addedAt: 1234567890 }, ...]
+    let favorites = JSON.parse(localStorage.getItem('libraryFavorites')) || [];
+
+    const bookListEl = document.getElementById('bookList');
+    const searchInput = document.getElementById('searchInput');
+    const toggleFavBtn = document.getElementById('toggleFavoritesBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageInfo = document.getElementById('pageInfo');
+
+    function getFavoritesSortedByDate() {
+      // Sort favorites array by addedAt descending (newest first)
+      const sorted = [...favorites].sort((a, b) => b.addedAt - a.addedAt);
+      // Return books in that order
+      return sorted
+        .map(fav => filteredBooks.find(book => book.id === fav.id))
+        .filter(Boolean);
+    }
+
+    function isFavorited(id) {
+      return favorites.some(f => f.id === id);
+    }
+
+    function init() {
+      booksData.sort((a, b) => a.id - b.id);
+      filteredBooks = [...booksData];
+      attachEventListeners();
+      render();
+    }
+
+    function render() {
+      // When viewing favorites, use date-sorted order; otherwise use normal list
+      const dataToRender = showOnlyFavorites ?
+        getFavoritesSortedByDate() :
+        filteredBooks;
+
+      const totalPages = Math.max(1, Math.ceil(dataToRender.length / itemsPerPage));
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const currentBooks = dataToRender.slice(startIndex, startIndex + itemsPerPage);
+
+      if (currentBooks.length === 0) {
+        bookListEl.innerHTML = '<p class="empty-state">No books found.</p>';
+      } else {
+        bookListEl.innerHTML = currentBooks.map(book => {
+          const isFav = isFavorited(book.id);
+          return `
+          <article class="book-card">
+            <h2 class="book-title">${book.title}</h2>
+            <div class="book-author">By ${book.author}</div>
+            <p class="book-excerpt">"${book.excerpt}"</p>
+            <div class="book-actions">
+              <a href="${book.link}" class="link-read">Read Full Text</a>
+              <button class="btn-fav ${isFav ? 'favorited' : ''}" onclick="toggleFavorite(${book.id})">
+                ${isFav ? '♥ Favorited' : '♡ Add to Favorites'}
+              </button>
+            </div>
+          </article>
+        `;
+        }).join('');
+      }
+
+      pageInfo.textContent = `${currentPage} of ${totalPages}`;
+      prevBtn.disabled = currentPage === 1;
+      nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    }
+
+    window.toggleFavorite = function(id) {
+      if (isFavorited(id)) {
+        favorites = favorites.filter(f => f.id !== id);
+      } else {
+        favorites.push({ id, addedAt: Date.now() }); // ← timestamp saved here
+      }
+      localStorage.setItem('libraryFavorites', JSON.stringify(favorites));
+      render();
+    };
+
+    function attachEventListeners() {
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        filteredBooks = booksData.filter(book =>
+          book.title.toLowerCase().includes(term) ||
+          book.author.toLowerCase().includes(term)
+        );
+        currentPage = 1;
+        render();
+      });
+
+      toggleFavBtn.addEventListener('click', () => {
+        showOnlyFavorites = !showOnlyFavorites;
+        toggleFavBtn.classList.toggle('active', showOnlyFavorites);
+        toggleFavBtn.textContent = showOnlyFavorites ? 'Show All Books' : 'View Favorites';
+        currentPage = 1;
+        render();
+      });
+
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        const dataToRender = showOnlyFavorites ?
+          getFavoritesSortedByDate() :
+          filteredBooks;
+        const totalPages = Math.ceil(dataToRender.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          render();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
