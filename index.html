@@ -284,18 +284,19 @@
   </div>
 
   <script>
-    const booksData = [
-      { id: 1, title: "Pride and Prejudice", author: "Jane Austen", excerpt: "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.", link: "#" },
-      { id: 2, title: "Moby-Dick", author: "Herman Melville", excerpt: "Call me Ishmael. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little...", link: "#" },
-      { id: 3, title: "Frankenstein", author: "Mary Shelley", excerpt: "You will rejoice to hear that no disaster has accompanied the commencement of an enterprise which you have regarded with such evil forebodings.", link: "#" },
-      { id: 4, title: "The Great Gatsby", author: "F. Scott Fitzgerald", excerpt: "In my younger and more vulnerable years my father gave me some advice that I've been turning over in my mind ever since.", link: "#" },
-      { id: 5, title: "Alice's Adventures in Wonderland", author: "Lewis Carroll", excerpt: "Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do...", link: "#" },
-      { id: 6, title: "Dracula", author: "Bram Stoker", excerpt: "3 May. Bistritz.—Left Munich at 8:35 P. M., on 1st May, arriving at Vienna early next morning; should have arrived at 6:46, but train was an hour late.", link: "#" },
-      { id: 7, title: "The Picture of Dorian Gray", author: "Oscar Wilde", excerpt: "The studio was filled with the rich odour of roses, and when the light summer wind stirred amidst the trees of the garden...", link: "#" },
-      { id: 8, title: "A Tale of Two Cities", author: "Charles Dickens", excerpt: "It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness...", link: "#" },
-      { id: 9, title: "Crime and Punishment", author: "Fyodor Dostoevsky", excerpt: "On an exceptionally hot evening early in July a young man came out of the garret in which he lodged in S. Place...", link: "#" },
-      { id: 10, title: "Jane Eyre", author: "Charlotte Brontë", excerpt: "There was no possibility of taking a walk that day. We had been wandering, indeed, in the leafless shrubbery an hour in the morning...", link: "#" }
-  ];
+    fetch('data/books.json')
+      .then(res => res.json())
+      .then(booksData => {
+        // everything that used to be inside init() goes here,
+        // but now booksData comes from the fetch instead of being hardcoded
+        filteredBooks = [...booksData];
+        attachEventListeners(booksData);
+        render(booksData);
+      })
+      .catch(() => {
+        document.getElementById('bookList').innerHTML =
+          '<p class="empty-state">Could not load books.</p>';
+      });
 
     let filteredBooks = [];
     let currentPage = 1;
@@ -325,13 +326,6 @@
       return favorites.some(f => f.id === id);
     }
 
-    function init() {
-      booksData.sort((a, b) => a.id - b.id);
-      filteredBooks = [...booksData];
-      attachEventListeners();
-      render();
-    }
-
     function render() {
       // When viewing favorites, use date-sorted order; otherwise use normal list
       const dataToRender = showOnlyFavorites ?
@@ -355,7 +349,7 @@
             <div class="book-author">By ${book.author}</div>
             <p class="book-excerpt">"${book.excerpt}"</p>
             <div class="book-actions">
-              <a href="${book.link}" class="link-read">Read Full Text</a>
+            <a href="reader.html?id=${book.id}" class="link-read">Read Full Text</a>
               <button class="btn-fav ${isFav ? 'favorited' : ''}" onclick="toggleFavorite(${book.id})">
                 ${isFav ? '♥ Favorited' : '♡ Add to Favorites'}
               </button>
@@ -419,8 +413,6 @@
         }
       });
     }
-
-    init();
   </script>
 </body>
 

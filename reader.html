@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-font="georgia">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── CSS VARIABLES ─── */
+    :root {
+      --bg: #fcfcfc;
+      --surface: #f3f3f0;
+      --text: #1a1a1a;
+      --text-muted: #737373;
+      --border: #e4e4e0;
+      --accent: #8b0000;
+      --accent-soft: rgba(139, 0, 0, .08);
+      --shadow: rgba(0, 0, 0, .06);
+      --toolbar-h: 56px;
+      --panel-w: 300px;
+      --transition: .25s ease;
+    }
+
+    /* ─── THEMES ─── */
+    [data-theme="sepia"] {
+      --bg: #f5efe3;
+      --surface: #ede5d5;
+      --text: #3b2a1a;
+      --text-muted: #8a7060;
+      --border: #d8cdb8;
+      --accent: #7a4a1e;
+      --accent-soft: rgba(122, 74, 30, .08);
+      --shadow: rgba(0, 0, 0, .08);
+    }
+
+    [data-theme="dark"] {
+      --bg: #141414;
+      --surface: #1e1e1e;
+      --text: #ddd8cc;
+      --text-muted: #6e6e6e;
+      --border: #2a2a2a;
+      --accent: #c0392b;
+      --accent-soft: rgba(192, 57, 43, .1);
+      --shadow: rgba(0, 0, 0, .3);
+    }
+
+    /* ─── FONT STACKS ─── */
+    [data-font="garamond"] {
+      --reader-font: 'EB Garamond', Georgia, serif;
+    }
+
+    [data-font="lora"] {
+      --reader-font: 'Lora', Georgia, serif;
+    }
+
+    [data-font="source-serif"] {
+      --reader-font: 'Source Serif 4', Georgia, serif;
+    }
+
+    [data-font="georgia"] {
+      --reader-font: Georgia, 'Times New Roman', serif;
+    }
+
+    [data-font="mono"] {
+      --reader-font: 'Inconsolata', 'Courier New', monospace;
+    }
+
+    /* ─── RESET ─── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      transition: background var(--transition), color var(--transition);
+      min-height: 100vh;
+    }
+
+    /* ─── READING PROGRESS BAR ─── */
+    #progressBar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      width: 0%;
+      background: var(--accent);
+      z-index: 1000;
+      transition: width .1s linear;
+    }
+
+    /* ─── TOOLBAR ─── */
+    #toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--toolbar-h);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      gap: 1rem;
+      z-index: 900;
+      transition: transform .3s ease, background var(--transition), border-color var(--transition);
+    }
+
+    #toolbar.hidden {
+      transform: translateY(-100%);
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: background .2s, color .2s;
+      flex-shrink: 0;
+    }
+
+    .btn-icon:hover {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .btn-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    #bookTitle {
+      font-family: Georgia, serif;
+      font-size: .9rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #chapterSelect {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .35rem .6rem;
+      font-size: .8rem;
+      color: var(--text);
+      cursor: pointer;
+      flex-shrink: 0;
+      max-width: 180px;
+      transition: background var(--transition), border-color var(--transition), color var(--transition);
+    }
+
+    #chapterSelect:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* ─── SETTINGS PANEL ─── */
+    #settingsOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .35);
+      z-index: 950;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+    }
+
+    #settingsOverlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #settingsPanel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: var(--panel-w);
+      background: var(--bg);
+      border-left: 1px solid var(--border);
+      z-index: 960;
+      transform: translateX(100%);
+      transition: transform .3s cubic-bezier(.4, 0, .2, 1), background var(--transition), border-color var(--transition);
+      overflow-y: auto;
+      padding: 1.5rem;
+    }
+
+    #settingsPanel.open {
+      transform: translateX(0);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .panel-header h2 {
+      font-family: Georgia, serif;
+      font-weight: normal;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    .setting-group {
+      margin-bottom: 1.75rem;
+    }
+
+    .setting-label {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--text-muted);
+      margin-bottom: .75rem;
+      display: block;
+    }
+
+    /* Theme buttons */
+    .theme-btns {
+      display: flex;
+      gap: .5rem;
+    }
+
+    .theme-btn {
+      flex: 1;
+      padding: .55rem .25rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .78rem;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s;
+      text-align: center;
+    }
+
+    .theme-btn[data-t="light"] {
+      background: #fcfcfc;
+      color: #1a1a1a;
+    }
+
+    .theme-btn[data-t="sepia"] {
+      background: #f5efe3;
+      color: #3b2a1a;
+    }
+
+    .theme-btn[data-t="dark"] {
+      background: #141414;
+      color: #ddd8cc;
+    }
+
+    .theme-btn.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    /* Font buttons */
+    .font-btns {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+    }
+
+    .font-btn {
+      padding: .5rem .75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .9rem;
+      cursor: pointer;
+      text-align: left;
+      background: var(--surface);
+      color: var(--text);
+      transition: border-color .2s;
+    }
+
+    .font-btn[data-f="garamond"] {
+      font-family: 'EB Garamond', Georgia, serif;
+    }
+
+    .font-btn[data-f="lora"] {
+      font-family: 'Lora', Georgia, serif;
+    }
+
+    .font-btn[data-f="source-serif"] {
+      font-family: 'Source Serif 4', Georgia, serif;
+    }
+
+    .font-btn[data-f="georgia"] {
+      font-family: Georgia, serif;
+    }
+
+    .font-btn[data-f="mono"] {
+      font-family: 'Inconsolata', monospace;
+    }
+
+    .font-btn.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    /* Font size */
+    .font-size-ctrl {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
+    .size-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s;
+      flex-shrink: 0;
+    }
+
+    .size-btn:hover {
+      border-color: var(--accent);
+    }
+
+    #fontSizeDisplay {
+      flex: 1;
+      text-align: center;
+      font-size: .9rem;
+      color: var(--text);
+    }
+
+    /* Alignment */
+    .align-btns {
+      display: flex;
+      gap: .5rem;
+    }
+
+    .align-btn {
+      flex: 1;
+      padding: .55rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s;
+    }
+
+    .align-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .align-btn.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    /* ─── READER CONTENT ─── */
+    #readerWrap {
+      padding-top: calc(var(--toolbar-h) + 2.5rem);
+      padding-bottom: 5rem;
+      max-width: 680px;
+      margin: 0 auto;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    #chapterContent {
+      font-family: var(--reader-font, Georgia, serif);
+      font-size: 18px;
+      line-height: 1.85;
+      color: var(--text);
+      text-align: left;
+      transition: color var(--transition), font-size .2s;
+    }
+
+    #chapterContent p {
+      margin-bottom: 1.4em;
+    }
+
+    #chapterContent p:first-child::first-letter {
+      font-size: 3.2em;
+      line-height: .8;
+      float: left;
+      margin: .06em .12em 0 0;
+      color: var(--accent);
+      font-family: Georgia, serif;
+    }
+
+    /* Loading & error states */
+    .state-msg {
+      font-family: Georgia, serif;
+      font-style: italic;
+      padding: 4rem 0;
+      color: var(--text-muted);
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    /* ─── CHAPTER NAV ─── */
+    #chapterNav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      gap: 1rem;
+      transition: border-color var(--transition);
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: .55rem 1.1rem;
+      font-family: -apple-system, sans-serif;
+      font-size: .82rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color .2s, color .2s, background .2s;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      border-color: var(--text);
+      background: var(--surface);
+    }
+
+    .nav-btn:disabled {
+      opacity: .3;
+      cursor: not-allowed;
+    }
+
+    .nav-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    #navChapterInfo {
+      font-size: .8rem;
+      color: var(--text-muted);
+      text-align: center;
+      flex: 1;
+    }
+
+    /* ─── SCROLL TO TOP ─── */
+    #scrollTopBtn {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s;
+      z-index: 800;
+    }
+
+    #scrollTopBtn.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #scrollTopBtn svg {
+      width: 16px;
+      height: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Reading progress bar -->
+  <div id="progressBar"></div>
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <div class="toolbar-left">
+      <a href="#" onclick="window.history.back()" class="btn-icon" title="Back to library" id="backBtn" style="text-decoration:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </a>
+      <span id="bookTitle">Loading…</span>
+    </div>
+    <div class="toolbar-right">
+      <select id="chapterSelect" title="Jump to chapter"></select>
+      <button class="btn-icon" id="settingsToggle" title="Reader settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings overlay + panel -->
+  <div id="settingsOverlay"></div>
+  <div id="settingsPanel" role="dialog" aria-label="Reader settings">
+    <div class="panel-header">
+      <h2>Reading Settings</h2>
+      <button class="btn-icon" id="settingsClose" title="Close settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Theme -->
+    <div class="setting-group">
+      <span class="setting-label">Theme</span>
+      <div class="theme-btns">
+        <button class="theme-btn" data-t="light">Light</button>
+        <button class="theme-btn" data-t="sepia">Sepia</button>
+        <button class="theme-btn" data-t="dark">Dark</button>
+      </div>
+    </div>
+
+    <!-- Font family -->
+    <div class="setting-group">
+      <span class="setting-label">Typeface</span>
+      <div class="font-btns">
+        <button class="font-btn" data-f="garamond">EB Garamond — classical elegance</button>
+        <button class="font-btn" data-f="lora">Lora — warm & readable</button>
+        <button class="font-btn" data-f="source-serif">Source Serif — clean & modern</button>
+        <button class="font-btn" data-f="georgia">Georgia — familiar serif</button>
+        <button class="font-btn" data-f="mono">Inconsolata — monospaced</button>
+      </div>
+    </div>
+
+    <!-- Font size -->
+    <div class="setting-group">
+      <span class="setting-label">Font Size</span>
+      <div class="font-size-ctrl">
+        <button class="size-btn" id="sizeDown">−</button>
+        <span id="fontSizeDisplay">18px</span>
+        <button class="size-btn" id="sizeUp">+</button>
+      </div>
+    </div>
+
+    <!-- Alignment -->
+    <div class="setting-group">
+      <span class="setting-label">Text Alignment</span>
+      <div class="align-btns">
+        <button class="align-btn" data-a="left" title="Left align">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="21" y1="6" x2="3" y2="6" />
+            <line x1="15" y1="12" x2="3" y2="12" />
+            <line x1="17" y1="18" x2="3" y2="18" />
+          </svg>
+          &nbsp;Left
+        </button>
+        <button class="align-btn" data-a="justify" title="Justify">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="21" y1="6" x2="3" y2="6" />
+            <line x1="21" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="18" x2="3" y2="18" />
+          </svg>
+          &nbsp;Justify
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reader area -->
+  <div id="readerWrap">
+    <div id="chapterContent">
+      <p class="state-msg">Loading chapter…</p>
+    </div>
+    <div id="chapterNav">
+      <button class="nav-btn" id="prevChBtn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        Prev
+      </button>
+      <div id="navChapterInfo"></div>
+      <button class="nav-btn" id="nextChBtn">
+        Next
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Scroll to top -->
+  <button id="scrollTopBtn" title="Back to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15" />
+    </svg>
+  </button>
+
+  <script>
+    // ─── URL PARAMS ─────────────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const bookId = parseInt(params.get('id'));
+    if (!bookId) {
+      window.location.replace('index.html');
+    }
+
+    // ─── STORAGE KEYS ───────────────────────────────────────────
+    const PREFS_KEY = 'reader_prefs';
+    const PROGRESS_KEY = `reader_progress_${bookId}`;
+
+    // ─── STATE ──────────────────────────────────────────────────
+    let prefs = {
+      theme: 'light',
+      font: 'garamond',
+      fontSize: 18,
+      alignment: 'left',
+      ...JSON.parse(localStorage.getItem(PREFS_KEY) || '{}')
+    };
+
+    let progress = {
+      chapter: parseInt(params.get('ch')) || 1,
+      scrollRatio: 0,
+      ...JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}')
+    };
+
+    if (params.has('ch')) progress.chapter = parseInt(params.get('ch'));
+
+    let currentChapter = progress.chapter;
+    let totalChapters = 1;
+
+    // ─── DOM REFS ────────────────────────────────────────────────
+    const html = document.documentElement;
+    const toolbar = document.getElementById('toolbar');
+    const bookTitleEl = document.getElementById('bookTitle');
+    const chapterSelect = document.getElementById('chapterSelect');
+    const settingsToggle = document.getElementById('settingsToggle');
+    const settingsClose = document.getElementById('settingsClose');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const settingsOverlay = document.getElementById('settingsOverlay');
+    const chapterContent = document.getElementById('chapterContent');
+    const prevChBtn = document.getElementById('prevChBtn');
+    const nextChBtn = document.getElementById('nextChBtn');
+    const navChapterInfo = document.getElementById('navChapterInfo');
+    const progressBar = document.getElementById('progressBar');
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+
+    // ─── FETCH BOOK DATA ─────────────────────────────────────────
+    fetch('data/books.json')
+      .then(res => res.json())
+      .then(data => {
+        const bookMeta = data.find(b => b.id === bookId);
+        init(bookMeta);
+      })
+      .catch(() => {
+        bookTitleEl.textContent = 'Could not load book data';
+      });
+
+    // ─── APPLY PREFS ────────────────────────────────────────────
+    function applyPrefs(save = true) {
+      html.setAttribute('data-theme', prefs.theme);
+      html.setAttribute('data-font', prefs.font);
+      chapterContent.style.fontSize = prefs.fontSize + 'px';
+      chapterContent.style.textAlign = prefs.alignment;
+      fontSizeDisplay.textContent = prefs.fontSize + 'px';
+
+      document.querySelectorAll('.theme-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.t === prefs.theme));
+      document.querySelectorAll('.font-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.f === prefs.font));
+      document.querySelectorAll('.align-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.a === prefs.alignment));
+
+      if (save) localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    }
+
+    // ─── SAVE PROGRESS ──────────────────────────────────────────
+    function saveProgress() {
+      const maxScroll = document.body.scrollHeight - window.innerHeight;
+      progress = {
+        chapter: currentChapter,
+        scrollRatio: maxScroll > 0 ? window.scrollY / maxScroll : 0
+      };
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+    }
+
+    // ─── CHAPTER SELECT ─────────────────────────────────────────
+    function populateChapterSelect() {
+      chapterSelect.innerHTML = '';
+      for (let i = 1; i <= totalChapters; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Chapter ${i}`;
+        if (i === currentChapter) opt.selected = true;
+        chapterSelect.appendChild(opt);
+      }
+    }
+
+    // ─── RENDER TEXT ─────────────────────────────────────────────
+    function renderText(raw) {
+      const paras = raw.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+      return paras.map(p => `<p>${p.replace(/\n/g, ' ')}</p>`).join('');
+    }
+
+    // ─── LOAD CHAPTER ────────────────────────────────────────────
+    async function loadChapter(bookMeta, num, restoreScroll = false) {
+      currentChapter = Math.max(1, Math.min(num, totalChapters));
+
+      chapterContent.innerHTML = '<p class="state-msg">Loading…</p>';
+      updateNavButtons();
+      populateChapterSelect();
+
+      const url = new URL(window.location);
+      url.searchParams.set('id', bookId);
+      url.searchParams.set('ch', currentChapter);
+      history.replaceState(null, '', url);
+
+      try {
+        const res = await fetch(`chapters/${bookId}/${currentChapter}.txt`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        chapterContent.innerHTML = renderText(text);
+      } catch (err) {
+        chapterContent.innerHTML = `
+          <p class="state-msg" style="font-style:normal; color: var(--text)">
+            Chapter hasn't been added yet.
+          </p>
+        `;
+      }
+
+      if (restoreScroll && progress.chapter === currentChapter && progress.scrollRatio > 0) {
+        setTimeout(() => {
+          const maxScroll = document.body.scrollHeight - window.innerHeight;
+          window.scrollTo({ top: progress.scrollRatio * maxScroll });
+        }, 80);
+      } else {
+        window.scrollTo({ top: 0 });
+      }
+
+      progress.chapter = currentChapter;
+      progress.scrollRatio = 0;
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+    }
+
+    function updateNavButtons() {
+      prevChBtn.disabled = currentChapter <= 1;
+      nextChBtn.disabled = currentChapter >= totalChapters;
+      navChapterInfo.textContent = `${currentChapter} / ${totalChapters}`;
+    }
+
+    // ─── SETTINGS PANEL ──────────────────────────────────────────
+    function openSettings() {
+      settingsPanel.classList.add('open');
+      settingsOverlay.classList.add('open');
+    }
+
+    function closeSettings() {
+      settingsPanel.classList.remove('open');
+      settingsOverlay.classList.remove('open');
+    }
+
+    // ─── TOOLBAR HIDE ON SCROLL ───────────────────────────────────
+    let lastScrollY = 0;
+    let ticking = false;
+
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const current = window.scrollY;
+          if (current > 100 && current > lastScrollY) {
+            toolbar.classList.add('hidden');
+          } else {
+            toolbar.classList.remove('hidden');
+          }
+          lastScrollY = current;
+
+          const maxScroll = document.body.scrollHeight - window.innerHeight;
+          const pct = maxScroll > 0 ? (current / maxScroll) * 100 : 0;
+          progressBar.style.width = pct + '%';
+
+          scrollTopBtn.classList.toggle('visible', current > 400);
+          saveProgress();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+
+    // ─── INIT ─────────────────────────────────────────────────────
+    function init(bookMeta) {
+      // Set totalChapters from book data
+      totalChapters = bookMeta?.chapters || 1;
+
+      if (!bookMeta) {
+        bookTitleEl.textContent = 'Book not found';
+        chapterContent.innerHTML = `
+            <p class="state-msg">This book doesn't exist in the library.</p>
+          `;
+        return; // stop here, don't set up listeners
+      }
+
+      document.title = `${bookMeta.title} · Reader`;
+      bookTitleEl.textContent = bookMeta.title;
+
+      applyPrefs(false);
+      populateChapterSelect();
+      loadChapter(bookMeta, currentChapter, true);
+
+      settingsToggle.addEventListener('click', openSettings);
+      settingsClose.addEventListener('click', closeSettings);
+      settingsOverlay.addEventListener('click', closeSettings);
+
+      document.querySelectorAll('.theme-btn').forEach(btn =>
+        btn.addEventListener('click', () => {
+          prefs.theme = btn.dataset.t;
+          applyPrefs();
+        }));
+
+      document.querySelectorAll('.font-btn').forEach(btn =>
+        btn.addEventListener('click', () => {
+          prefs.font = btn.dataset.f;
+          applyPrefs();
+        }));
+
+      document.getElementById('sizeDown').addEventListener('click', () => {
+        if (prefs.fontSize > 12) {
+          prefs.fontSize -= 1;
+          applyPrefs();
+        }
+      });
+      document.getElementById('sizeUp').addEventListener('click', () => {
+        if (prefs.fontSize < 32) {
+          prefs.fontSize += 1;
+          applyPrefs();
+        }
+      });
+
+      document.querySelectorAll('.align-btn').forEach(btn =>
+        btn.addEventListener('click', () => {
+          prefs.alignment = btn.dataset.a;
+          applyPrefs();
+        }));
+
+      chapterSelect.addEventListener('change', () =>
+        loadChapter(bookMeta, parseInt(chapterSelect.value)));
+
+      prevChBtn.addEventListener('click', () => loadChapter(bookMeta, currentChapter - 1));
+      nextChBtn.addEventListener('click', () => loadChapter(bookMeta, currentChapter + 1));
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      scrollTopBtn.addEventListener('click', () =>
+        window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      window.addEventListener('beforeunload', saveProgress);
+
+      document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          if (currentChapter < totalChapters) loadChapter(bookMeta, currentChapter + 1);
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          if (currentChapter > 1) loadChapter(bookMeta, currentChapter - 1);
+        }
+        if (e.key === 's' || e.key === 'S') {
+          settingsPanel.classList.contains('open') ? closeSettings() : openSettings();
+        }
+        if (e.key === 'Escape') closeSettings();
+      });
+    }
+  </script>
+</body>
+
+</html>
