@@ -112,7 +112,7 @@
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      padding: 0 1.25rem;
+      padding: 0rem;
       gap: 1rem;
       z-index: 900;
       transition: transform .3s ease, background var(--transition), border-color var(--transition);
@@ -769,7 +769,14 @@
       try {
         const res = await fetch(`chapters/${bookId}/${currentChapter}.txt`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        // When a .txt file doesn't exist, Cloudflare Pages (and similar hosts)
+        // return index.html with a 200 OK instead of a 404. We detect this by
+        // checking the Content-Type header and the response body start tag.
+        const contentType = res.headers.get('content-type') || '';
         const text = await res.text();
+        if (contentType.includes('text/html') || text.trimStart().startsWith('<')) {
+          throw new Error('Got HTML fallback instead of chapter text');
+        }
         chapterContent.innerHTML = renderText(text);
       } catch (err) {
         chapterContent.innerHTML = `
