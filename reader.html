@@ -650,7 +650,7 @@
   <script>
     // ─── URL PARAMS ─────────────────────────────────────────────
     const params = new URLSearchParams(window.location.search);
-    const bookId = parseInt(params.get('id'));
+    const bookId = params.get('id');
     if (!bookId) {
       window.location.replace('index.html');
     }
@@ -786,18 +786,23 @@
         `;
       }
 
-      if (restoreScroll && progress.chapter === currentChapter && progress.scrollRatio > 0) {
-        setTimeout(() => {
-          const maxScroll = document.body.scrollHeight - window.innerHeight;
-          window.scrollTo({ top: progress.scrollRatio * maxScroll });
-        }, 80);
-      } else {
-        window.scrollTo({ top: 0 });
-      }
+      // AFTER — snapshot ratio before it gets wiped
+      const savedRatio = (restoreScroll && progress.chapter === currentChapter) ?
+        progress.scrollRatio :
+        0;
 
       progress.chapter = currentChapter;
       progress.scrollRatio = 0;
       localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+
+      if (savedRatio > 0) {
+        setTimeout(() => {
+          const maxScroll = document.body.scrollHeight - window.innerHeight;
+          window.scrollTo({ top: savedRatio * maxScroll });
+        }, 80);
+      } else {
+        window.scrollTo({ top: 0 });
+      }
     }
 
     function updateNavButtons() {

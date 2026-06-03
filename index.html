@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Public Domain Books Archive</title>
+  <title>Public Domain Books Archive | Collection of Classic Literature</title>
   <style>
     /* ─── CSS VARIABLES (mirrors reader.html exactly) ─── */
     :root {
@@ -204,7 +204,6 @@
       display: flex;
       flex-direction: column;
       gap: 4rem;
-      min-height: 50vh;
     }
 
     .book-card {
@@ -454,7 +453,7 @@
               <p class="book-excerpt">"${book.excerpt}"</p>
               <div class="book-actions">
                 <a href="reader.html?id=${book.id}" class="link-read">Read Full Text</a>
-                <button class="btn-fav ${isFav ? 'favorited' : ''}" onclick="toggleFavorite(${book.id})">
+                <button class="btn-fav ${isFav ? 'favorited' : ''}" onclick="toggleFavorite('${book.id}')">
                   ${isFav ? '♥ Favorited' : '♡ Add to Favorites'}
                 </button>
               </div>
