@@ -5,6 +5,13 @@
     "author": "Jane Austen",
     "chapters": 61,
     "excerpt": "It is a truth universally acknowledged..."
+  },
+  {
+    "id": 2,
+    "title": "Pride and Prejudice",
+    "author": "Jane Austen",
+    "chapters": 61,
+    "excerpt": "It is a truth universally acknowledged..."
   }
-  
+
 ]

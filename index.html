@@ -374,7 +374,7 @@
       render();
     };
 
-    function attachEventListeners() {
+    function attachEventListeners(booksData) {
       searchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase().trim();
         filteredBooks = booksData.filter(book =>
