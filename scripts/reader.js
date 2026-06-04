@@ -19,12 +19,12 @@ let prefs = {
 };
 
 let progress = {
-  chapter: parseInt(params.get('ch')) || 1,
+  chapter: parseInt(params.get('chapter')) || 1,
   scrollRatio: 0,
   ...JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}')
 };
 
-if (params.has('ch')) progress.chapter = parseInt(params.get('ch'));
+if (params.has('chapter')) progress.chapter = parseInt(params.get('chapter'));
 
 let currentChapter = progress.chapter;
 let totalChapters = 1;
@@ -113,7 +113,7 @@ async function loadChapter(bookMeta, num, restoreScroll = false) {
 
   const url = new URL(window.location);
   url.searchParams.set('id', bookId);
-  url.searchParams.set('ch', currentChapter);
+  url.searchParams.set('chapter', currentChapter);
   history.replaceState(null, '', url);
 
   try {

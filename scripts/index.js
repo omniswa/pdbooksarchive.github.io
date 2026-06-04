@@ -26,6 +26,12 @@ fetch('book-data/books.json')
   .then(res => res.json())
   .then(booksData => {
     filteredBooks = [...booksData];
+    // Restore page if user is returning from a book
+    const savedPage = sessionStorage.getItem('savedPage');
+    if (savedPage) {
+      currentPage = parseInt(savedPage, 10);
+      sessionStorage.removeItem('savedPage');
+    }
     attachEventListeners(booksData);
     render();
   })
@@ -91,6 +97,12 @@ function render() {
   prevBtn.disabled = currentPage === 1;
   nextBtn.disabled = currentPage === totalPages || totalPages === 0;
 }
+
+bookListEl.addEventListener('click', (e) => {
+  if (e.target.classList.contains('link-read')) {
+    sessionStorage.setItem('savedPage', currentPage);
+  }
+});
 
 window.toggleFavorite = function(id) {
   if (isFavorited(id)) {
