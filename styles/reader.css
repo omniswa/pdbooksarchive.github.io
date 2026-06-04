@@ -1,0 +1,511 @@
+/* ─── CSS VARIABLES ─── */
+:root {
+  --bg: #fcfcfc;
+  --surface: #f3f3f0;
+  --text: #1a1a1a;
+  --text-muted: #737373;
+  --border: #e4e4e0;
+  --accent: #8b0000;
+  --accent-soft: rgba(139, 0, 0, .08);
+  --shadow: rgba(0, 0, 0, .06);
+  --toolbar-h: 56px;
+  --panel-w: 300px;
+  --transition: .25s ease;
+}
+
+/* ─── THEMES ─── */
+[data-theme="sepia"] {
+  --bg: #f5efe3;
+  --surface: #ede5d5;
+  --text: #3b2a1a;
+  --text-muted: #8a7060;
+  --border: #d8cdb8;
+  --accent: #7a4a1e;
+  --accent-soft: rgba(122, 74, 30, .08);
+  --shadow: rgba(0, 0, 0, .08);
+}
+
+[data-theme="dark"] {
+  --bg: #141414;
+  --surface: #1e1e1e;
+  --text: #ddd8cc;
+  --text-muted: #6e6e6e;
+  --border: #2a2a2a;
+  --accent: #c0392b;
+  --accent-soft: rgba(192, 57, 43, .1);
+  --shadow: rgba(0, 0, 0, .3);
+}
+
+/* ─── FONT STACKS ─── */
+[data-font="garamond"] {
+  --reader-font: 'EB Garamond', Georgia, serif;
+}
+
+[data-font="lora"] {
+  --reader-font: 'Lora', Georgia, serif;
+}
+
+[data-font="source-serif"] {
+  --reader-font: 'Source Serif 4', Georgia, serif;
+}
+
+[data-font="georgia"] {
+  --reader-font: Georgia, 'Times New Roman', serif;
+}
+
+[data-font="mono"] {
+  --reader-font: 'Inconsolata', 'Courier New', monospace;
+}
+
+/* ─── RESET ─── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition: background var(--transition), color var(--transition);
+  min-height: 100vh;
+}
+
+/* ─── READING PROGRESS BAR ─── */
+#progressBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: var(--accent);
+  z-index: 1000;
+  transition: width .1s linear;
+}
+
+/* ─── TOOLBAR ─── */
+#toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--toolbar-h);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0rem;
+  gap: 1rem;
+  z-index: 900;
+  transition: transform .3s ease, background var(--transition), border-color var(--transition);
+}
+
+#toolbar.hidden {
+  transform: translateY(-100%);
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background .2s, color .2s;
+  flex-shrink: 0;
+}
+
+.btn-icon:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.btn-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+#bookTitle {
+  font-family: Georgia, serif;
+  font-size: .9rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#chapterSelect {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: .35rem .6rem;
+  font-size: .8rem;
+  color: var(--text);
+  cursor: pointer;
+  flex-shrink: 0;
+  max-width: 180px;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+#chapterSelect:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* ─── SETTINGS PANEL ─── */
+#settingsOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .35);
+  z-index: 950;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+}
+
+#settingsOverlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#settingsPanel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--panel-w);
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  z-index: 960;
+  transform: translateX(100%);
+  transition: transform .3s cubic-bezier(.4, 0, .2, 1), background var(--transition), border-color var(--transition);
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+#settingsPanel.open {
+  transform: translateX(0);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.panel-header h2 {
+  font-family: Georgia, serif;
+  font-weight: normal;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.setting-group {
+  margin-bottom: 1.75rem;
+}
+
+.setting-label {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+  margin-bottom: .75rem;
+  display: block;
+}
+
+/* Theme buttons */
+.theme-btns {
+  display: flex;
+  gap: .5rem;
+}
+
+.theme-btn {
+  flex: 1;
+  padding: .55rem .25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: .78rem;
+  cursor: pointer;
+  transition: border-color .2s, box-shadow .2s;
+  text-align: center;
+}
+
+.theme-btn[data-t="light"] {
+  background: #fcfcfc;
+  color: #1a1a1a;
+}
+
+.theme-btn[data-t="sepia"] {
+  background: #f5efe3;
+  color: #3b2a1a;
+}
+
+.theme-btn[data-t="dark"] {
+  background: #141414;
+  color: #ddd8cc;
+}
+
+.theme-btn.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* Font buttons */
+.font-btns {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+.font-btn {
+  padding: .5rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: .9rem;
+  cursor: pointer;
+  text-align: left;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color .2s;
+}
+
+.font-btn[data-f="garamond"] {
+  font-family: 'EB Garamond', Georgia, serif;
+}
+
+.font-btn[data-f="lora"] {
+  font-family: 'Lora', Georgia, serif;
+}
+
+.font-btn[data-f="source-serif"] {
+  font-family: 'Source Serif 4', Georgia, serif;
+}
+
+.font-btn[data-f="georgia"] {
+  font-family: Georgia, serif;
+}
+
+.font-btn[data-f="mono"] {
+  font-family: 'Inconsolata', monospace;
+}
+
+.font-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Font size */
+.font-size-ctrl {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.size-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .2s;
+  flex-shrink: 0;
+}
+
+.size-btn:hover {
+  border-color: var(--accent);
+}
+
+#fontSizeDisplay {
+  flex: 1;
+  text-align: center;
+  font-size: .9rem;
+  color: var(--text);
+}
+
+/* Alignment */
+.align-btns {
+  display: flex;
+  gap: .5rem;
+}
+
+.align-btn {
+  flex: 1;
+  padding: .55rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .2s;
+}
+
+.align-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.align-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* ─── READER CONTENT ─── */
+#readerWrap {
+  padding-top: calc(var(--toolbar-h) + 2.5rem);
+  padding-bottom: 5rem;
+  max-width: 680px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+#chapterContent {
+  font-family: var(--reader-font, Georgia, serif);
+  font-size: 18px;
+  line-height: 1.85;
+  color: var(--text);
+  text-align: left;
+  transition: color var(--transition), font-size .2s;
+}
+
+#chapterContent p {
+  margin-bottom: 1.4em;
+}
+
+#chapterContent p:first-child::first-letter {
+  font-size: 3.2em;
+  line-height: .8;
+  float: left;
+  margin: .06em .12em 0 0;
+  color: var(--accent);
+  font-family: Georgia, serif;
+}
+
+/* Loading & error states */
+.state-msg {
+  font-family: Georgia, serif;
+  font-style: italic;
+  padding: 4rem 0;
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+/* ─── CHAPTER NAV ─── */
+#chapterNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  gap: 1rem;
+  transition: border-color var(--transition);
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 40px;
+  padding: .55rem 1.1rem;
+  font-family: -apple-system, sans-serif;
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color .2s, color .2s, background .2s;
+}
+
+.nav-btn:hover:not(:disabled) {
+  border-color: var(--text);
+  background: var(--surface);
+}
+
+.nav-btn:disabled {
+  opacity: .3;
+  cursor: not-allowed;
+}
+
+.nav-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+#navChapterInfo {
+  font-size: .8rem;
+  color: var(--text-muted);
+  text-align: center;
+  flex: 1;
+}
+
+/* ─── SCROLL TO TOP ─── */
+#scrollTopBtn {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+  z-index: 800;
+}
+
+#scrollTopBtn.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+#scrollTopBtn svg {
+  width: 16px;
+  height: 16px;
+}

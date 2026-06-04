@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Post Generator | 3NDING</title>
+  <link rel="stylesheet" href="styles/generator.css">
+  <link rel="icon" href="apple-touch-icon.png" type="image/png">
+
+  <!-- marked.js for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+
+  <header>
+    <nav>
+      <a href="#" class="logo">3NDING GENERATOR</a>
+    </nav>
+  </header>
+
+  <main class="blog-container">
+
+    <form id="generatorForm">
+      <div class="form-group">
+        <label for="postTitle">Article Title</label>
+        <input type="text" id="postTitle" placeholder="e.g., Must-Have Browser Extensions for 2026" required>
+      </div>
+
+      <div class="form-group">
+        <label for="postYear">Folder Year</label>
+        <select id="postYear" required>
+          <option value="2026" selected>2026</option>
+          <option value="2027">2027</option>
+          <option value="2028">2028</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="postCategory">Category</label>
+        <select id="postCategory" required>
+          <option value="Technology News">Technology News</option>
+          <option value="Consumer Technology">Consumer Technology</option>
+          <option value="Guides & Tutorials">Guides & Tutorials</option>
+          <option value="Miscellaneous">Miscellaneous</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="postMeta">Meta Description</label>
+        <textarea id="postMeta" placeholder="A short description that will appear in search results and social cards..." required></textarea>
+      </div>
+
+      <div class="form-group">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
+          <label for="postContent" style="margin-bottom: 0;">Markdown Content</label>
+          <span id="wordCountDisplay" style="font-size: 0.8rem; color: var(--accent); font-weight: 600;">0 Words</span>
+        </div>
+        <textarea id="postContent" placeholder="Write your content in Markdown here..." required></textarea>
+      </div>
+
+      <!-- ─── Affiliate Link (Optional) ─── -->
+      <div class="form-group affiliate-form-group">
+        <div class="affiliate-toggle-row">
+          <div>
+            <span class="affiliate-label">Affiliate / Sponsored Link</span>
+            <span class="affiliate-optional-tag">Optional</span>
+          </div>
+          <label class="toggle-switch" aria-label="Enable affiliate link">
+            <input type="checkbox" id="affiliateToggle">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div id="affiliateFields" class="affiliate-fields">
+          <div class="affiliate-inner-grid">
+            <div class="form-group aff-inner-group">
+              <label for="affiliateUrl">Link URL <span class="req-star">*</span></label>
+              <input type="url" id="affiliateUrl" placeholder="https://example.com/your-affiliate-link">
+            </div>
+
+            <div class="form-group aff-inner-group">
+              <label for="affiliateHeadline">Modal Headline</label>
+              <input type="text" id="affiliateHeadline" placeholder="e.g., Our Top Pick for Developers">
+            </div>
+
+            <div class="form-group aff-inner-group" style="grid-column: 1 / -1;">
+              <label for="affiliateDesc">Short Description</label>
+              <textarea id="affiliateDesc" placeholder="A brief, compelling reason to click the link..."></textarea>
+            </div>
+
+            <div class="form-group aff-inner-group">
+              <label for="affiliateBtnText">Button Text</label>
+              <input type="text" id="affiliateBtnText" placeholder="Get the Deal">
+            </div>
+
+            <div class="form-group aff-inner-group">
+              <label for="affiliateDelay">Appears After</label>
+              <select id="affiliateDelay">
+                <option value="3">3 seconds</option>
+                <option value="5" selected>5 seconds</option>
+                <option value="8">8 seconds</option>
+                <option value="12">12 seconds</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ─── End Affiliate Link ─── -->
+
+      <div class="btn-group">
+        <button type="button" id="btnClear" class="btn-danger">Clear Form</button>
+        <button type="submit" class="btn-primary">Download HTML</button>
+      </div>
+    </form>
+
+    <section class="output-section active" id="outputSection">
+      <div class="output-header">
+        <h3>JSON Metadata</h3>
+        <button id="btnCopyJson" class="btn-secondary">Copy JSON</button>
+      </div>
+      <pre><code id="jsonPreview"></code></pre>
+    </section>
+  </main>
+
+  <script src="scripts/generator.js" defer></script>
+</body>
+
+</html>
