@@ -1,22 +1,31 @@
 <!DOCTYPE html>
-<html lang="en" class="dark-theme">
+<html lang="en" data-theme="light">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog Post Generator | 3NDING</title>
+  <title>Blog Post Generator | PDBA Blog</title>
   <link rel="stylesheet" href="styles/generator.css">
   <link rel="icon" href="apple-touch-icon.png" type="image/png">
 
   <!-- marked.js for Markdown parsing -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- Apply saved theme before paint to avoid flash -->
+  <script>
+    (function() {
+      var prefs = JSON.parse(localStorage.getItem('reader_prefs') || '{}');
+      var theme = prefs.theme || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 
 <body>
 
   <header>
     <nav>
-      <a href="#" class="logo">3NDING GENERATOR</a>
+      <a href="#" class="logo">PDBA BLOG GENERATOR</a>
     </nav>
   </header>
 
@@ -25,25 +34,15 @@
     <form id="generatorForm">
       <div class="form-group">
         <label for="postTitle">Article Title</label>
-        <input type="text" id="postTitle" placeholder="e.g., Must-Have Browser Extensions for 2026" required>
-      </div>
-
-      <div class="form-group">
-        <label for="postYear">Folder Year</label>
-        <select id="postYear" required>
-          <option value="2026" selected>2026</option>
-          <option value="2027">2027</option>
-          <option value="2028">2028</option>
-        </select>
+        <input type="text" id="postTitle" placeholder="e.g., Must-Read Books for 2026" required>
       </div>
 
       <div class="form-group">
         <label for="postCategory">Category</label>
         <select id="postCategory" required>
-          <option value="Technology News">Technology News</option>
-          <option value="Consumer Technology">Consumer Technology</option>
-          <option value="Guides & Tutorials">Guides & Tutorials</option>
-          <option value="Miscellaneous">Miscellaneous</option>
+          <option value="Author Page">Author Page</option>
+          <option value="Book Summary">Book Summary</option>
+          <option value="Book to Read">Book to Read</option>
         </select>
       </div>
 
@@ -82,7 +81,7 @@
 
             <div class="form-group aff-inner-group">
               <label for="affiliateHeadline">Modal Headline</label>
-              <input type="text" id="affiliateHeadline" placeholder="e.g., Our Top Pick for Developers">
+              <input type="text" id="affiliateHeadline" placeholder="e.g., Our Best Pick for Book Lovers">
             </div>
 
             <div class="form-group aff-inner-group" style="grid-column: 1 / -1;">
@@ -122,6 +121,12 @@
       </div>
       <pre><code id="jsonPreview"></code></pre>
     </section>
+
+    <div class="nav-theme-toggle">
+      <button class="theme-dot" data-t="light" title="Light theme"></button>
+      <button class="theme-dot" data-t="sepia" title="Sepia theme"></button>
+      <button class="theme-dot" data-t="dark" title="Dark theme"></button>
+    </div>
   </main>
 
   <script src="scripts/generator.js" defer></script>

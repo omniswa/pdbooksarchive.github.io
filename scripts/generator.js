@@ -14,6 +14,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const isoDate = today.toISOString();
   const displayDate = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
+  // ─── Theme Management (synced with index via reader_prefs) ───────────────
+  const PREFS_KEY = 'reader_prefs';
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.querySelectorAll('.theme-dot').forEach(dot =>
+      dot.classList.toggle('active', dot.dataset.t === theme)
+    );
+  }
+
+  function loadTheme() {
+    const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+    applyTheme(prefs.theme || 'light');
+  }
+
+  document.querySelectorAll('.theme-dot').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || '{}');
+      prefs.theme = btn.dataset.t;
+      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+      applyTheme(prefs.theme);
+    });
+  });
+
+  loadTheme();
+  // ─────────────────────────────────────────────────────────────────────────
+
   // --- Affiliate Toggle: Show / Hide Fields ---
   affiliateToggle.addEventListener("change", () => {
     affiliateFields.classList.toggle("visible", affiliateToggle.checked);
@@ -22,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Utility: Live JSON Preview ---
   function updateJsonPreview() {
     const title = document.getElementById("postTitle").value.trim() || "Article Title";
-    const year = document.getElementById("postYear").value;
     const meta = document.getElementById("postMeta").value.trim() || "Meta description...";
     const category = categoryInput.value;
     const markdown = document.getElementById("postContent").value.trim();
@@ -30,9 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Generate Slug (Strip apostrophes first to attach letters natively, e.g., "It's" -> "Its")
     const slug = title.toLowerCase()
       .replace(/['\u2018\u2019]/g, '') // Removes standard and curly apostrophes
-      .replace(/[^a-z0-9]+/g, '-') 
+      .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-    const currentOrigin = window.location.origin !== "null" ? window.location.origin : "https://3nding.top";
+    const currentOrigin = window.location.origin !== "null" ? window.location.origin : "https://publicdomainbooksarchive.pages.dev";
 
     // Process Content
     const processedContentHtml = processHtmlContent(markdown);
@@ -49,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
   category: "${category}",
   published: "${displayDate}",
   excerpt: "${meta}",
-  link: "blogs/${year}/${slug}.html"
+  link: "blogs/${slug}.html"
 }`;
     jsonPreview.textContent = jsonOutput;
   }
@@ -99,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // 4. Handle External Links
-    const currentOrigin = window.location.origin !== "null" ? window.location.origin : "https://3nding.top";
+    const currentOrigin = window.location.origin !== "null" ? window.location.origin : "https://publicdomainbooksarchive.pages.dev";
     tempDiv.querySelectorAll("a").forEach(a => {
       if (a.href.startsWith("http") && !a.href.startsWith(currentOrigin)) {
         a.setAttribute("target", "_blank");
@@ -121,11 +147,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function buildAffiliateCode(slug) {
     if (!affiliateToggle.checked) return { css: '', html: '', script: '' };
 
-    const affUrl      = document.getElementById("affiliateUrl").value.trim();
+    const affUrl = document.getElementById("affiliateUrl").value.trim();
     const affHeadline = document.getElementById("affiliateHeadline").value.trim() || "Our Best Pick";
-    const affDesc     = document.getElementById("affiliateDesc").value.trim();
-    const affBtn      = document.getElementById("affiliateBtnText").value.trim() || "Check It Out";
-    const affDelay    = parseInt(document.getElementById("affiliateDelay").value, 10) || 5;
+    const affDesc = document.getElementById("affiliateDesc").value.trim();
+    const affBtn = document.getElementById("affiliateBtnText").value.trim() || "Check It Out";
+    const affDelay = parseInt(document.getElementById("affiliateDelay").value, 10) || 5;
 
     // Silently skip if no URL was provided
     if (!affUrl) return { css: '', html: '', script: '' };
@@ -244,9 +270,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   </style>`;
 
-    const descHtml = affDesc
-      ? `<p class="aff-desc">${affDesc}</p>`
-      : '';
+    const descHtml = affDesc ?
+      `<p class="aff-desc">${affDesc}</p>` :
+      '';
 
     const html = `
   <!-- Affiliate Modal -->
@@ -322,7 +348,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const title = document.getElementById("postTitle").value.trim() || "Article Title";
-    const year = document.getElementById("postYear").value;
     const meta = document.getElementById("postMeta").value.trim() || "Meta description...";
     const category = categoryInput.value;
     const markdown = document.getElementById("postContent").value.trim();
@@ -330,9 +355,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Generate Slug
     const slug = title.toLowerCase()
       .replace(/['\u2018\u2019]/g, '')
-      .replace(/[^a-z0-9]+/g, '-') 
+      .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-    const currentOrigin = window.location.origin !== "null" ? window.location.origin : "https://3nding.top";
+    const currentOrigin = window.location.origin !== "null" ? window.location.origin : "https://publicdomainbooksarchive.pages.dev";
 
     // Process Content
     const processedContentHtml = processHtmlContent(markdown);
@@ -354,32 +379,32 @@ document.addEventListener("DOMContentLoaded", () => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="index, follow">
 
-  <title>${title} | 3NDING</title>
+  <title>${title} | PDBA Blog</title>
   <meta name="description" content="${meta}">
 
   <!-- Canonical URL (Prevents duplicate content issues) -->
-  <link rel="canonical" href="${currentOrigin}/blogs/${year}/${slug}">
+  <link rel="canonical" href="${currentOrigin}/blogs/${slug}">
 
   <!-- Open Graph / Facebook (For rich social sharing) -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="${currentOrigin}/blogs/${year}/${slug}">
+  <meta property="og:url" content="${currentOrigin}/blogs/${slug}">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${meta}">
-  <meta property="og:image" content="https://3nding.top/og-image.webp">
-  <meta property="og:site_name" content="3NDING">
+  <meta property="og:image" content="https://publicdomainbooksarchive.pages.dev/og-image.webp">
+  <meta property="og:site_name" content="PDBA Blog">
   <meta property="article:published_time" content="${isoDate}">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="${currentOrigin}/blogs/${year}/${slug}">
+  <meta name="twitter:url" content="${currentOrigin}/blogs/${slug}">
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${meta}">
-  <meta name="twitter:image" content="https://3nding.top/og-image.webp">
+  <meta name="twitter:image" content="https://publicdomainbooksarchive.pages.dev/og-image.webp">
 
-  <link rel="icon" href="../../apple-touch-icon.png" type="image/png">
-  <link rel="preload" href="../../fonts/outfit.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="../../styles/index.css">
-  <link rel="stylesheet" href="../../styles/blog.css">
+  <link rel="icon" href="../apple-touch-icon.png" type="image/png">
+  <link rel="preload" href="../fonts/outfit.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../styles/blog-index.css">
+  <link rel="stylesheet" href="../styles/blog.css">
 
   <!-- Schema.org JSON-LD -->
   <script type="application/ld+json">
@@ -388,19 +413,19 @@ document.addEventListener("DOMContentLoaded", () => {
       "@type": "BlogPosting",
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": "${currentOrigin}/blogs/${year}/${slug}"
+        "@id": "${currentOrigin}/blogs/${slug}"
       },
       "headline": "${title}",
       "description": "${meta}",
-      "image": "https://3nding.top/og-image.webp",
+      "image": "https://publicdomainbooksarchive.pages.dev/og-image.webp",
       "author": {
         "@type": "Organization",
-        "name": "3NDING",
+        "name": "PDBA Blog",
         "url": "${currentOrigin}"
       },
       "publisher": {
         "@type": "Organization",
-        "name": "3NDING",
+        "name": "PDBA Blog",
         "logo": {
           "@type": "ImageObject",
           "url": "${currentOrigin}/apple-touch-icon.png"
@@ -423,9 +448,9 @@ document.addEventListener("DOMContentLoaded", () => {
 <body>
   <header>
     <nav>
-      <a href="../../index.html" class="logo">3NDING</a>
+      <a href="../blog-index.html" class="logo">PDBA BLOG</a>
       <div class="nav-links">
-        <a href="#" id="link">Link</a>
+        <a href="../index.html" id="archive">Archive</a>
       </div>
     </nav>
   </header>
@@ -463,12 +488,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   <footer>
     <div class="f-links">
-      <a href="../../pages/about.html">About</a>
-      <a href="../../pages/contact.html">Contact</a>
-      <a href="../../pages/privacy.html">Privacy</a>
-      <a href="../../pages/terms.html">Terms</a>
+      <a href="../pages/about.html">About</a>
+      <a href="../pages/contact.html">Contact</a>
+      <a href="../pages/privacy.html">Privacy</a>
+      <a href="../pages/terms.html">Terms</a>
     </div>
-    <p class="copy">&copy; <span id="year"></span> 3NDING. ALL RIGHTS RESERVED.</p>
+    <p class="copy">&copy; <span id="year"></span> PDBA BLOG. ALL RIGHTS RESERVED.</p>
     <div class="theme-toggle-wrapper">
       <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme"></button>
     </div>
@@ -499,7 +524,7 @@ document.addEventListener("DOMContentLoaded", () => {
   </nav>
 
   <aside class="code-block"></aside>
-  <script src="../../scripts/blog.js" defer><\/script>${aff.html}${aff.script}
+  <script src="../scripts/blog.js" defer><\/script>${aff.html}${aff.script}
 </body>
 </html>`;
 
