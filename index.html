@@ -173,7 +173,14 @@
       color: var(--text-muted);
     }
 
+    .action-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
     .btn {
+      width: 100%;
       background: transparent;
       border: 1px solid var(--border);
       padding: 0.55rem 1.2rem;
@@ -295,7 +302,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 5rem;
+      margin-top: 4rem;
       padding-top: 2rem;
       border-top: 1px solid var(--border);
       font-size: 0.82rem;
@@ -357,7 +364,10 @@
         <div class="search-wrapper">
           <input type="text" id="searchInput" placeholder="Search by title or author..." autocomplete="off">
         </div>
-        <button id="toggleFavoritesBtn" class="btn">View Favorites</button>
+        <div class="action-wrapper">
+          <button id="toggleFavoritesBtn" class="btn">View Favorites</button>
+          <a href="blog.html" class="btn" style="text-decoration: none; text-align: center">View Blogs</a>
+        </div>
       </div>
 
       <div id="bookList" class="book-list">
@@ -397,7 +407,7 @@
     loadTheme();
 
     // ─── BOOKS DATA ──────────────────────────────────────────────────────────
-    fetch('data/books.json')
+    fetch('book-data/books.json')
       .then(res => res.json())
       .then(booksData => {
         filteredBooks = [...booksData];

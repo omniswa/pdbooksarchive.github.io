@@ -697,7 +697,7 @@
     const fontSizeDisplay = document.getElementById('fontSizeDisplay');
 
     // ─── FETCH BOOK DATA ─────────────────────────────────────────
-    fetch('data/books.json')
+    fetch('book-data/books.json')
       .then(res => res.json())
       .then(data => {
         const bookMeta = data.find(b => b.id === bookId);
@@ -767,7 +767,7 @@
       history.replaceState(null, '', url);
 
       try {
-        const res = await fetch(`chapters/${bookId}/${currentChapter}.txt`);
+        const res = await fetch(`books/${bookId}/${currentChapter}.txt`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         // When a .txt file doesn't exist, Cloudflare Pages (and similar hosts)
         // return index.html with a 200 OK instead of a 404. We detect this by
