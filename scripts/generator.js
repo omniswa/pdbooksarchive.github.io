@@ -390,7 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <meta property="og:url" content="${currentOrigin}/blogs/${slug}">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${meta}">
-  <meta property="og:image" content="https://publicdomainbooksarchive.pages.dev/og-image.webp">
+  <meta property="og:image" content="${currentOrigin}/og-image.webp">
   <meta property="og:site_name" content="PDBA Blog">
   <meta property="article:published_time" content="${isoDate}">
 
@@ -399,10 +399,9 @@ document.addEventListener("DOMContentLoaded", () => {
   <meta name="twitter:url" content="${currentOrigin}/blogs/${slug}">
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${meta}">
-  <meta name="twitter:image" content="https://publicdomainbooksarchive.pages.dev/og-image.webp">
+  <meta name="twitter:image" content="${currentOrigin}/og-image.webp">
 
   <link rel="icon" href="../apple-touch-icon.png" type="image/png">
-  <link rel="preload" href="../fonts/outfit.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../styles/blog-index.css">
   <link rel="stylesheet" href="../styles/blog.css">
 
@@ -417,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       "headline": "${title}",
       "description": "${meta}",
-      "image": "https://publicdomainbooksarchive.pages.dev/og-image.webp",
+      "image": "${currentOrigin}/og-image.webp",
       "author": {
         "@type": "Organization",
         "name": "PDBA Blog",
@@ -437,18 +436,17 @@ document.addEventListener("DOMContentLoaded", () => {
   <\/script>
 
   <script>
-    const savedTheme = localStorage.getItem('3nding_theme');
-    const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-    if (savedTheme === 'light' || (!savedTheme && prefersLight)) {
-      document.documentElement.classList.add('light-theme');
-    }
+    (function() {
+      const saved = JSON.parse(localStorage.getItem('reader_prefs') || '{}');
+      document.documentElement.setAttribute('data-theme', saved.theme || 'light');
+    })();
   <\/script>${aff.css}
 </head>
 
 <body>
   <header>
     <nav>
-      <a href="../blog-index.html" class="logo">PDBA BLOG</a>
+      <a href="../blog-index.html" class="logo">PDBA Blog</a>
       <div class="nav-links">
         <a href="../index.html" id="archive">Archive</a>
       </div>
@@ -494,8 +492,10 @@ document.addEventListener("DOMContentLoaded", () => {
       <a href="../pages/terms.html">Terms</a>
     </div>
     <p class="copy">&copy; <span id="year"></span> PDBA BLOG. ALL RIGHTS RESERVED.</p>
-    <div class="theme-toggle-wrapper">
-      <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme"></button>
+    <div class="theme-toggle-wrapper" style="margin-top:24px;display:flex;justify-content:center;gap:.35rem;">
+      <button class="theme-dot" data-t="light" title="Light theme"></button>
+      <button class="theme-dot" data-t="sepia" title="Sepia theme"></button>
+      <button class="theme-dot" data-t="dark" title="Dark theme"></button>
     </div>
   </footer>
 

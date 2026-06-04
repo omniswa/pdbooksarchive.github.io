@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://publicdomainbooksarchive.pages.dev/sitemap.txt
