@@ -46,12 +46,54 @@ const progressBar = document.getElementById('progressBar');
 const scrollTopBtn = document.getElementById('scrollTopBtn');
 const fontSizeDisplay = document.getElementById('fontSizeDisplay');
 
+// ─── CHAPTER DISCOVERY ───────────────────────────────────────
+// Probes the books/ folder to count .txt files without a manifest.
+// Uses a doubling pass to find an upper bound, then binary search —
+// roughly O(2 log N) requests regardless of book length.
+async function chapterExists(num) {
+  try {
+    const res = await fetch(`books/${bookId}/${num}.txt`);
+    if (!res.ok) return false;
+    const ct = res.headers.get('content-type') || '';
+    // Static hosts (Cloudflare Pages etc.) may return index.html on 404
+    if (ct.includes('text/html')) return false;
+    const peek = await res.text();
+    if (peek.trimStart().startsWith('<')) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function discoverChapterCount() {
+  // Must have at least chapter 1
+  if (!(await chapterExists(1))) return 0;
+
+  // Double until we overshoot
+  let hi = 1;
+  while (await chapterExists(hi * 2)) {
+    hi *= 2;
+    if (hi >= 1024) break; // safety cap
+  }
+
+  // Binary search between hi and hi*2
+  let lo = hi;
+  hi = hi * 2;
+  while (lo < hi - 1) {
+    const mid = (lo + hi) >> 1;
+    if (await chapterExists(mid)) lo = mid;
+    else hi = mid;
+  }
+
+  return lo;
+}
+
 // ─── FETCH BOOK DATA ─────────────────────────────────────────
 fetch('book-data/books.json')
   .then(res => res.json())
-  .then(data => {
+  .then(async data => {
     const bookMeta = data.find(b => b.id === bookId);
-    init(bookMeta);
+    await init(bookMeta);
   })
   .catch(() => {
     bookTitleEl.textContent = 'Could not load book data';
@@ -130,10 +172,10 @@ async function loadChapter(bookMeta, num, restoreScroll = false) {
     chapterContent.innerHTML = renderText(text);
   } catch (err) {
     chapterContent.innerHTML = `
-          <p class="state-msg" style="font-style:normal; color: var(--text)">
-            Chapter hasn't been added yet.
-          </p>
-        `;
+      <p class="state-msg" style="font-style:normal; color: var(--text)">
+        Chapter hasn't been added yet.
+      </p>
+    `;
   }
 
   // AFTER — snapshot ratio before it gets wiped
@@ -200,25 +242,30 @@ function onScroll() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
-function init(bookMeta) {
-  // Set totalChapters from book data
-  totalChapters = bookMeta?.chapters || 1;
-
+async function init(bookMeta) {
   if (!bookMeta) {
     bookTitleEl.textContent = 'Book not found';
     chapterContent.innerHTML = `
-            <p class="state-msg">This book doesn't exist in the library.</p>
-          `;
-    return; // stop here, don't set up listeners
+      <p class="state-msg">This book doesn't exist in the library.</p>
+    `;
+    return;
   }
 
   document.title = `${bookMeta.title} · Reader`;
   bookTitleEl.textContent = bookMeta.title;
-
   applyPrefs(false);
+
+  // Show a placeholder while we probe the folder
+  chapterSelect.innerHTML = '<option disabled>Loading…</option>';
+
+  // Discover chapter count from actual files in books/<id>/
+  const discovered = await discoverChapterCount();
+  totalChapters = discovered > 0 ? discovered : 1;
+
   populateChapterSelect();
   loadChapter(bookMeta, currentChapter, true);
 
+  // ─── EVENT LISTENERS ────────────────────────────────────────
   settingsToggle.addEventListener('click', openSettings);
   settingsClose.addEventListener('click', closeSettings);
   settingsOverlay.addEventListener('click', closeSettings);

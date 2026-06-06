@@ -2,8 +2,11 @@
   {
     "id": "pride-and-prejudice",
     "title": "Pride and Prejudice",
-    "author": "Jane Austen",
-    "chapters": 61,
-    "excerpt": "It is a truth universally acknowledged..."
+    "author": "Jane Austen"
+  },
+  {
+    "id": "alices-adventures-in-wonderland",
+    "title": "Alice's Adventures in Wonderland",
+    "author": "Lewis Carroll"
   }
 ]

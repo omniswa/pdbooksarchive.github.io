@@ -78,18 +78,17 @@ function render() {
     bookListEl.innerHTML = currentBooks.map(book => {
       const isFav = isFavorited(book.id);
       return `
-            <article class="book-card">
-              <h2 class="book-title">${book.title}</h2>
-              <div class="book-author">By ${book.author}</div>
-              <p class="book-excerpt">"${book.excerpt}"</p>
-              <div class="book-actions">
-                <a href="reader.html?id=${book.id}" class="link-read">Read Full Text</a>
-                <button class="btn-fav ${isFav ? 'favorited' : ''}" onclick="toggleFavorite('${book.id}')">
-                  ${isFav ? '♥ Favorited' : '♡ Add to Favorites'}
-                </button>
-              </div>
-            </article>
-          `;
+        <article class="book-card">
+          <h2 class="book-title">${book.title}</h2>
+          <div class="book-author">By ${book.author}</div>
+          <div class="book-actions">
+            <a href="reader.html?id=${book.id}" class="link-read">Read Full Text</a>
+            <button class="btn-fav ${isFav ? 'favorited' : ''}" onclick="toggleFavorite('${book.id}')">
+              ${isFav ? '♥ Favorited' : '♡ Add to Favorites'}
+            </button>
+          </div>
+        </article>
+      `;
     }).join('');
   }
 
