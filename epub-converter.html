@@ -196,20 +196,25 @@
     /* FILE SELECTED STATE */
     #file-info {
       display: none;
-      padding: 1rem 1.5rem;
+      flex-direction: column;
       border-bottom: 1px solid var(--border);
       background: var(--success-bg);
-      align-items: center;
-      gap: 0.75rem;
     }
 
     #file-info.visible {
       display: flex;
     }
 
+    .file-info-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.5rem;
+    }
+
     .file-icon {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       background: var(--success);
       border-radius: 6px;
       display: flex;
@@ -222,17 +227,13 @@
       color: white;
     }
 
-    #file-name {
+    .file-info-label {
       font-weight: 600;
-      font-size: 0.9rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 320px;
+      font-size: 0.88rem;
     }
 
-    #file-size {
-      font-size: 0.78rem;
+    .file-info-sublabel {
+      font-size: 0.75rem;
       color: var(--ink2);
     }
 
@@ -247,10 +248,110 @@
       display: flex;
       align-items: center;
       transition: color 0.15s;
+      flex-shrink: 0;
     }
 
     .clear-btn:hover {
       color: var(--accent);
+    }
+
+    /* File list */
+    #file-list {
+      max-height: 140px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .file-list-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 1.5rem;
+      font-size: 0.8rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .file-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .file-list-num {
+      width: 18px;
+      height: 18px;
+      background: var(--success);
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .file-list-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .file-list-size {
+      font-size: 0.72rem;
+      color: var(--ink2);
+      flex-shrink: 0;
+    }
+
+    .file-list-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--ink2);
+      padding: 0.15rem;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+
+    .file-list-remove:hover {
+      color: var(--accent);
+      opacity: 1;
+    }
+
+    /* Add more files link */
+    .add-more-wrap {
+      padding: 0.5rem 1.5rem 0.65rem;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .add-more-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.78rem;
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .add-more-label input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .add-more-label:hover {
+      color: var(--accent-dark);
     }
 
     /* OPTIONS */
@@ -602,7 +703,7 @@
     <div class="card">
       <!-- Drop Zone -->
       <div id="drop-zone">
-        <input type="file" id="file-input" accept=".epub">
+        <input type="file" id="file-input" accept=".epub" multiple>
         <div class="drop-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -617,21 +718,34 @@
 
       <!-- File Info -->
       <div id="file-info">
-        <div class="file-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+        <div class="file-info-header">
+          <div class="file-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <div>
+            <div class="file-info-label" id="file-count-label">1 file selected</div>
+            <div class="file-info-sublabel" id="file-size-label">—</div>
+          </div>
+          <button class="clear-btn" id="clear-btn" title="Remove all files">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
-        <div>
-          <div id="file-name">—</div>
-          <div id="file-size">—</div>
+        <div id="file-list"></div>
+        <div class="add-more-wrap">
+          <label class="add-more-label">
+            <input type="file" id="add-more-input" accept=".epub" multiple>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add more EPUBs
+          </label>
         </div>
-        <button class="clear-btn" id="clear-btn" title="Remove file">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
       </div>
 
       <!-- Options -->
@@ -763,15 +877,17 @@
 
   <script>
     // ── State ──────────────────────────────────────────────────────────────────
-    let currentFile = null;
+    let currentFiles = []; // Array of File objects
     let downloadAction = null;
 
     // ── DOM Refs ───────────────────────────────────────────────────────────────
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
+    const addMoreInput = document.getElementById('add-more-input');
     const fileInfo = document.getElementById('file-info');
-    const fileNameEl = document.getElementById('file-name');
-    const fileSizeEl = document.getElementById('file-size');
+    const fileCountLabel = document.getElementById('file-count-label');
+    const fileSizeLabel = document.getElementById('file-size-label');
+    const fileListEl = document.getElementById('file-list');
     const clearBtn = document.getElementById('clear-btn');
     const convertBtn = document.getElementById('convert-btn');
     const progressArea = document.getElementById('progress-area');
@@ -791,32 +907,69 @@
     dropZone.addEventListener('drop', e => {
       e.preventDefault();
       dropZone.classList.remove('drag-over');
-      const f = e.dataTransfer.files[0];
-      if (f) setFile(f);
+      addFiles(Array.from(e.dataTransfer.files));
     });
-    fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
-
-    clearBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      clearFile();
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) addFiles(Array.from(fileInput.files));
+      fileInput.value = '';
+    });
+    addMoreInput.addEventListener('change', () => {
+      if (addMoreInput.files.length) addFiles(Array.from(addMoreInput.files));
+      addMoreInput.value = '';
     });
 
-    function setFile(f) {
-      if (!f.name.toLowerCase().endsWith('.epub')) {
-        showError('Please upload a valid .epub file.');
-        return;
-      }
-      hideError();
-      currentFile = f;
-      fileNameEl.textContent = f.name;
-      fileSizeEl.textContent = formatBytes(f.size);
+    clearBtn.addEventListener('click', e => { e.stopPropagation();
+      clearFiles(); });
+
+    function addFiles(newFiles) {
+      const valid = newFiles.filter(f => f.name.toLowerCase().endsWith('.epub'));
+      const invalid = newFiles.length - valid.length;
+      if (invalid > 0) showError(`${invalid} file(s) skipped — only .epub files are supported.`);
+      else hideError();
+
+      // Deduplicate by name+size
+      const existing = new Set(currentFiles.map(f => f.name + f.size));
+      const fresh = valid.filter(f => !existing.has(f.name + f.size));
+      currentFiles = [...currentFiles, ...fresh];
+
+      if (currentFiles.length > 0) renderFileList();
+    }
+
+    function removeFile(index) {
+      currentFiles.splice(index, 1);
+      if (currentFiles.length === 0) clearFiles();
+      else renderFileList();
+    }
+
+    function renderFileList() {
+      const total = currentFiles.reduce((s, f) => s + f.size, 0);
+      const count = currentFiles.length;
+      fileCountLabel.textContent = count === 1 ? '1 file selected' : `${count} files selected`;
+      fileSizeLabel.textContent = `Total: ${formatBytes(total)}`;
+
+      fileListEl.innerHTML = currentFiles.map((f, i) => `
+        <div class="file-list-item">
+          <div class="file-list-num">${i + 1}</div>
+          <div class="file-list-name" title="${escHtml(f.name)}">${escHtml(f.name)}</div>
+          <div class="file-list-size">${formatBytes(f.size)}</div>
+          <button class="file-list-remove" data-index="${i}" title="Remove">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>`).join('');
+
+      fileListEl.querySelectorAll('.file-list-remove').forEach(btn => {
+        btn.addEventListener('click', () => removeFile(parseInt(btn.dataset.index)));
+      });
+
       fileInfo.classList.add('visible');
       convertBtn.disabled = false;
       resultArea.classList.remove('visible');
     }
 
-    function clearFile() {
-      currentFile = null;
+    function clearFiles() {
+      currentFiles = [];
       fileInput.value = '';
       fileInfo.classList.remove('visible');
       convertBtn.disabled = true;
@@ -832,10 +985,8 @@
     }
 
     // ── UI Helpers ─────────────────────────────────────────────────────────────
-    function showError(msg) {
-      errorText.textContent = msg;
-      errorArea.classList.add('visible');
-    }
+    function showError(msg) { errorText.textContent = msg;
+      errorArea.classList.add('visible'); }
 
     function hideError() { errorArea.classList.remove('visible'); }
 
@@ -855,25 +1006,21 @@
       const zip = await JSZip.loadAsync(file);
       const parser = new DOMParser();
 
-      // 1. Read container.xml → find OPF path
       const containerXml = await zip.file('META-INF/container.xml').async('text');
       const containerDoc = parser.parseFromString(containerXml, 'application/xml');
       const opfPath = containerDoc.querySelector('rootfile').getAttribute('full-path');
       const opfDir = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
 
-      // 2. Parse OPF
       const opfXml = await zip.file(opfPath).async('text');
       const opfDoc = parser.parseFromString(opfXml, 'application/xml');
 
-      // Metadata
       const getTag = (tag) => {
         const el = opfDoc.querySelector(tag) || opfDoc.querySelector(`*|${tag}`);
         return el ? el.textContent.trim() : '';
       };
-      const title = getTag('title') || getTag('dc\\:title') || 'Unknown Title';
+      const title = getTag('title') || getTag('dc\\:title') || file.name.replace(/\.epub$/i, '');
       const author = getTag('creator') || getTag('dc\\:creator') || 'Unknown Author';
 
-      // Build manifest map
       const manifest = {};
       opfDoc.querySelectorAll('manifest item, item').forEach(item => {
         manifest[item.getAttribute('id')] = {
@@ -882,7 +1029,6 @@
         };
       });
 
-      // Spine order
       const spineItems = [];
       opfDoc.querySelectorAll('spine itemref, itemref').forEach(ref => {
         const id = ref.getAttribute('idref');
@@ -891,26 +1037,19 @@
         }
       });
 
-      // 3. Extract chapters
       const chapters = [];
       for (let i = 0; i < spineItems.length; i++) {
         const { href } = spineItems[i];
-        // Normalize path (handle ../ etc.)
         const normalized = normalizePath(href);
         const fileInZip = zip.file(normalized) || zip.file(href);
         if (!fileInZip) continue;
         const html = await fileInZip.async('text');
         const doc = parser.parseFromString(html, 'text/html');
-
-        // Try to get a title from heading
         const h = doc.querySelector('h1, h2, h3, h4');
         const chapterTitle = h ? h.textContent.trim() : `Chapter ${chapters.length + 1}`;
-
-        // Get body content
         const body = doc.querySelector('body');
         const bodyHtml = body ? body.innerHTML : html;
         const bodyText = body ? extractText(body) : stripTags(html);
-
         chapters.push({ title: chapterTitle, html: bodyHtml, text: bodyText, href });
       }
 
@@ -939,7 +1078,7 @@
           } else if (tag === 'p') {
             const t = node.textContent.trim();
             if (t) text += '\n' + t + '\n';
-          } else if (['br'].includes(tag)) {
+          } else if (tag === 'br') {
             text += '\n';
           } else if (['script', 'style', 'nav', 'aside'].includes(tag)) {
             // skip
@@ -959,94 +1098,142 @@
 
     // ── Convert & Download ─────────────────────────────────────────────────────
     convertBtn.addEventListener('click', async () => {
-      if (!currentFile) return;
+      if (!currentFiles.length) return;
       hideError();
       resultArea.classList.remove('visible');
       convertBtn.disabled = true;
-      setProgress(10, 'Reading EPUB file…');
+
+      const format = document.querySelector('input[name="format"]:checked').value;
+      const structure = document.querySelector('input[name="structure"]:checked').value;
+      const isBatch = currentFiles.length > 1;
 
       try {
-        setProgress(25, 'Parsing book structure…');
-        const { title, author, chapters } = await parseEpub(currentFile);
+        setProgress(5, 'Starting conversion…');
 
-        if (chapters.length === 0) {
-          throw new Error('No readable content found in this EPUB. The file may be DRM-protected or use an unsupported format.');
+        // Parse all EPUBs
+        const books = [];
+        for (let i = 0; i < currentFiles.length; i++) {
+          const pct = 5 + Math.round((i / currentFiles.length) * 55);
+          setProgress(pct, `Parsing book ${i + 1} of ${currentFiles.length}…`);
+          const book = await parseEpub(currentFiles[i]);
+          if (book.chapters.length === 0) throw new Error(`No readable content found in "${currentFiles[i].name}". It may be DRM-protected.`);
+          books.push(book);
         }
 
-        setProgress(60, `Processing ${chapters.length} chapters…`);
-
-        const format = document.querySelector('input[name="format"]:checked').value;
-        const structure = document.querySelector('input[name="structure"]:checked').value;
-
-        setProgress(80, 'Generating output…');
+        setProgress(65, 'Generating output…');
 
         let blob, filename;
+        const outZip = new JSZip();
 
-        if (structure === 'single') {
-          if (format === 'txt') {
-            const content = chapters.map(ch =>
-              `\n${'═'.repeat(60)}\n${ch.title}\n${'═'.repeat(60)}\n\n${ch.text.trim()}\n`
-            ).join('\n');
-            const header = `${title}\nby ${author}\n${'═'.repeat(60)}\n`;
-            blob = new Blob([header + content], { type: 'text/plain; charset=utf-8' });
-            filename = sanitize(title) + '.txt';
-          } else {
-            const body = chapters.map((ch, i) =>
-              `<article id="chapter-${i+1}" class="chapter">
-  <h2>${escHtml(ch.title)}</h2>
-  <div class="chapter-body">${ch.html}</div>
-</article>`
-            ).join('\n<hr class="chapter-break">\n');
-            const fullHtml = buildHtmlDoc(title, author, body);
-            blob = new Blob([fullHtml], { type: 'text/html; charset=utf-8' });
-            filename = sanitize(title) + '.html';
-          }
-        } else {
-          // Multiple files → ZIP
-          const outZip = new JSZip();
-          const folder = outZip.folder(sanitize(title));
-          const padLen = String(chapters.length).length;
-
-          chapters.forEach((ch, i) => {
-            const num = String(i + 1).padStart(padLen, '0');
-            const fname = `${num}_${sanitize(ch.title)}`;
-            if (format === 'txt') {
-              const content = `${ch.title}\n${'─'.repeat(ch.title.length)}\n\n${ch.text.trim()}`;
-              folder.file(fname + '.txt', content);
+        if (isBatch) {
+          // Always ZIP for multiple books
+          for (const book of books) {
+            const bookFolder = outZip.folder(sanitize(book.title));
+            if (structure === 'single') {
+              if (format === 'txt') {
+                const content = `${book.title}\nby ${book.author}\n${'═'.repeat(60)}\n` +
+                  book.chapters.map(ch => `\n${'═'.repeat(60)}\n${ch.title}\n${'═'.repeat(60)}\n\n${ch.text.trim()}\n`).join('\n');
+                bookFolder.file(sanitize(book.title) + '.txt', content);
+              } else {
+                const body = book.chapters.map((ch, i) =>
+                  `<article id="chapter-${i+1}" class="chapter">\n  <h2>${escHtml(ch.title)}</h2>\n  <div class="chapter-body">${ch.html}</div>\n</article>`
+                ).join('\n<hr class="chapter-break">\n');
+                bookFolder.file(sanitize(book.title) + '.html', buildHtmlDoc(book.title, book.author, body));
+              }
             } else {
-              const chHtml = buildHtmlDoc(ch.title, author,
-                `<article class="chapter"><h1>${escHtml(ch.title)}</h1><div class="chapter-body">${ch.html}</div></article>`
-              );
-              folder.file(fname + '.html', chHtml);
+              const padLen = String(book.chapters.length).length;
+              const chapFolder = bookFolder.folder('chapters');
+              book.chapters.forEach((ch, i) => {
+                const num = String(i + 1).padStart(padLen, '0');
+                const fname = `${num}_${sanitize(ch.title)}`;
+                if (format === 'txt') {
+                  chapFolder.file(fname + '.txt', `${ch.title}\n${'─'.repeat(ch.title.length)}\n\n${ch.text.trim()}`);
+                } else {
+                  chapFolder.file(fname + '.html', buildHtmlDoc(ch.title, book.author,
+                    `<article class="chapter"><h1>${escHtml(ch.title)}</h1><div class="chapter-body">${ch.html}</div></article>`));
+                }
+              });
             }
-          });
-
-          setProgress(90, 'Packaging ZIP…');
+          }
+          setProgress(88, 'Packaging ZIP…');
           blob = await outZip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
-          filename = sanitize(title) + '_chapters.zip';
+          filename = `epub_batch_${books.length}_books.zip`;
+
+        } else {
+          // Single book — original behaviour
+          const book = books[0];
+          if (structure === 'single') {
+            if (format === 'txt') {
+              const content = book.chapters.map(ch =>
+                `\n${'═'.repeat(60)}\n${ch.title}\n${'═'.repeat(60)}\n\n${ch.text.trim()}\n`
+              ).join('\n');
+              blob = new Blob([`${book.title}\nby ${book.author}\n${'═'.repeat(60)}\n` + content], { type: 'text/plain; charset=utf-8' });
+              filename = sanitize(book.title) + '.txt';
+            } else {
+              const body = book.chapters.map((ch, i) =>
+                `<article id="chapter-${i+1}" class="chapter">\n  <h2>${escHtml(ch.title)}</h2>\n  <div class="chapter-body">${ch.html}</div>\n</article>`
+              ).join('\n<hr class="chapter-break">\n');
+              blob = new Blob([buildHtmlDoc(book.title, book.author, body)], { type: 'text/html; charset=utf-8' });
+              filename = sanitize(book.title) + '.html';
+            }
+          } else {
+            const padLen = String(book.chapters.length).length;
+            const folder = outZip.folder(sanitize(book.title));
+            book.chapters.forEach((ch, i) => {
+              const num = String(i + 1).padStart(padLen, '0');
+              const fname = `${num}_${sanitize(ch.title)}`;
+              if (format === 'txt') {
+                folder.file(fname + '.txt', `${ch.title}\n${'─'.repeat(ch.title.length)}\n\n${ch.text.trim()}`);
+              } else {
+                folder.file(fname + '.html', buildHtmlDoc(ch.title, book.author,
+                  `<article class="chapter"><h1>${escHtml(ch.title)}</h1><div class="chapter-body">${ch.html}</div></article>`));
+              }
+            });
+            setProgress(88, 'Packaging ZIP…');
+            blob = await outZip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+            filename = sanitize(book.title) + '_chapters.zip';
+          }
         }
 
         setProgress(100, 'Done!');
 
         // Populate result
-        document.getElementById('meta-title').textContent = title;
-        document.getElementById('meta-author').textContent = author;
-        document.getElementById('meta-chapters').textContent = chapters.length;
-        document.getElementById('meta-format').textContent = structure === 'single' ?
-          `Single ${format.toUpperCase()} file` :
-          `${chapters.length} ${format.toUpperCase()} files (ZIP)`;
+        const totalChapters = books.reduce((s, b) => s + b.chapters.length, 0);
+        if (isBatch) {
+          document.getElementById('meta-title').textContent = `${books.length} books`;
+          document.getElementById('meta-author').textContent = books.map(b => b.author).filter((v, i, a) => a.indexOf(v) === i).join(', ');
+          document.getElementById('meta-chapters').textContent = totalChapters;
+          document.getElementById('meta-format').textContent = `ZIP bundle · ${format.toUpperCase()}`;
+        } else {
+          document.getElementById('meta-title').textContent = books[0].title;
+          document.getElementById('meta-author').textContent = books[0].author;
+          document.getElementById('meta-chapters').textContent = books[0].chapters.length;
+          document.getElementById('meta-format').textContent = structure === 'single' ?
+            `Single ${format.toUpperCase()} file` :
+            `${books[0].chapters.length} ${format.toUpperCase()} files (ZIP)`;
+        }
         document.getElementById('result-subtitle').textContent = `${filename} · ${formatBytes(blob.size)}`;
         document.getElementById('download-label').textContent = `Download ${filename}`;
 
+        // Chapter/book list preview
         const listEl = document.getElementById('chapter-list-wrap');
-        listEl.innerHTML = chapters.map((ch, i) => `
-      <div class="chapter-item">
-        <div class="chapter-num">${i+1}</div>
-        <div class="chapter-title">${escHtml(ch.title)}</div>
-        <div class="chapter-size">${formatBytes(new Blob([format === 'txt' ? ch.text : ch.html]).size)}</div>
-      </div>`).join('');
+        if (isBatch) {
+          listEl.innerHTML = books.map((b, i) => `
+            <div class="chapter-item">
+              <div class="chapter-num">${i+1}</div>
+              <div class="chapter-title">${escHtml(b.title)}</div>
+              <div class="chapter-size">${b.chapters.length} ch.</div>
+            </div>`).join('');
+        } else {
+          const book = books[0];
+          listEl.innerHTML = book.chapters.map((ch, i) => `
+            <div class="chapter-item">
+              <div class="chapter-num">${i+1}</div>
+              <div class="chapter-title">${escHtml(ch.title)}</div>
+              <div class="chapter-size">${formatBytes(new Blob([format === 'txt' ? ch.text : ch.html]).size)}</div>
+            </div>`).join('');
+        }
 
-        // Store download action
         downloadAction = () => {
           const a = document.createElement('a');
           a.href = URL.createObjectURL(blob);
@@ -1065,7 +1252,7 @@
       } catch (err) {
         console.error(err);
         hideProgress();
-        showError(err.message || 'Conversion failed. Please check your EPUB file and try again.');
+        showError(err.message || 'Conversion failed. Please check your EPUB files and try again.');
         convertBtn.disabled = false;
       }
     });

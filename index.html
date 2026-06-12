@@ -4,7 +4,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Public Domain Books Archive | Collection of Classic Literature</title>
+
+  <!-- ─── PRIMARY SEO ─── -->
+  <title>Literatum — Free Classic Literature &amp; Public Domain Books</title>
+  <meta name="description" content="Literatum is a curated archive of free public domain books. Read classic literature from authors like Jane Austen, Charles Dickens, and Mark Twain — no account required.">
+  <meta name="keywords" content="public domain books, free classic literature, read books online, gutenberg, classic novels, free ebooks">
+  <meta name="author" content="Literatum">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://yourdomain.com/">
+
+  <!-- ─── OPEN GRAPH (Facebook, LinkedIn, WhatsApp) ─── -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Literatum">
+  <meta property="og:title" content="Literatum — Free Classic Literature &amp; Public Domain Books">
+  <meta property="og:description" content="A curated archive of timeless books, free to read. No sign-up, no paywalls — just great literature.">
+  <meta property="og:url" content="https://yourdomain.com/">
+  <meta property="og:image" content="https://yourdomain.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+
+  <!-- ─── TWITTER CARD ─── -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Literatum — Free Classic Literature &amp; Public Domain Books">
+  <meta name="twitter:description" content="A curated archive of timeless books, free to read. No sign-up, no paywalls — just great literature.">
+  <meta name="twitter:image" content="https://yourdomain.com/og-image.png">
+
+  <!-- ─── SCHEMA.ORG STRUCTURED DATA ─── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Literatum",
+    "url": "https://yourdomain.com/",
+    "description": "A curated archive of free public domain books and classic literature.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://yourdomain.com/?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Literatum Book Archive",
+    "description": "Browse hundreds of free public domain classics, from Victorian novels to ancient philosophy.",
+    "url": "https://yourdomain.com/",
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Literatum",
+      "url": "https://yourdomain.com/"
+    }
+  }
+  </script>
+
   <link rel="stylesheet" href="styles/index.css">
 </head>
 
@@ -12,20 +72,21 @@
 
   <div class="container">
     <header>
-      <!-- Theme toggle dots — same themes as reader.html -->
+      <!-- Theme toggle dots -->
       <div class="theme-toggle">
-        <button class="theme-dot" data-t="light" title="Light theme"></button>
-        <button class="theme-dot" data-t="sepia" title="Sepia theme"></button>
-        <button class="theme-dot" data-t="dark" title="Dark theme"></button>
+        <button class="theme-dot" data-t="light" title="Light theme" aria-label="Switch to light theme"></button>
+        <button class="theme-dot" data-t="sepia" title="Sepia theme" aria-label="Switch to sepia theme"></button>
+        <button class="theme-dot" data-t="dark" title="Dark theme" aria-label="Switch to dark theme"></button>
       </div>
-      <h1>Public Domain Books Archive</h1>
-      <div class="subtitle">A Curated Collection of Classic Literature</div>
+      <h1>LITERATUM</h1>
+      <p class="subtitle">Free Classic Literature &amp; Public Domain Books</p>
     </header>
 
     <main>
       <div class="controls">
         <div class="search-wrapper">
-          <input type="text" id="searchInput" placeholder="Search by title or author..." autocomplete="off">
+          <label for="searchInput" class="visually-hidden">Search books by title or author</label>
+          <input type="text" id="searchInput" placeholder="Search by title or author..." autocomplete="off" aria-label="Search books">
         </div>
         <div class="action-wrapper">
           <button id="toggleFavoritesBtn" class="btn">View Favorites</button>
@@ -33,17 +94,32 @@
         </div>
       </div>
 
-      <div id="bookList" class="book-list">
+      <div id="bookList" class="book-list" role="list" aria-label="Book collection">
         <!-- Books injected via JS -->
       </div>
 
-      <div class="pagination">
-        <button id="prevBtn" disabled>Prev</button>
-        <span id="pageInfo">1 of 1</span>
-        <button id="nextBtn">Next</button>
-      </div>
+      <nav class="pagination" aria-label="Book list pagination">
+        <button id="prevBtn" disabled aria-label="Previous page">Prev</button>
+        <span id="pageInfo" aria-live="polite">1 of 1</span>
+        <button id="nextBtn" aria-label="Next page">Next</button>
+      </nav>
     </main>
   </div>
+
+  <!-- Visually hidden utility class for accessible labels -->
+  <style>
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
 
   <script src="scripts/index.js" defer></script>
 </body>

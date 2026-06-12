@@ -28,6 +28,7 @@ if (params.has('chapter')) progress.chapter = parseInt(params.get('chapter'));
 
 let currentChapter = progress.chapter;
 let totalChapters = 1;
+let bookZip = null;
 
 // ─── DOM REFS ────────────────────────────────────────────────
 const html = document.documentElement;
@@ -47,45 +48,18 @@ const scrollTopBtn = document.getElementById('scrollTopBtn');
 const fontSizeDisplay = document.getElementById('fontSizeDisplay');
 
 // ─── CHAPTER DISCOVERY ───────────────────────────────────────
-// Probes the books/ folder to count .txt files without a manifest.
-// Uses a doubling pass to find an upper bound, then binary search —
-// roughly O(2 log N) requests regardless of book length.
-async function chapterExists(num) {
-  try {
-    const res = await fetch(`books/${bookId}/${num}.txt`);
-    if (!res.ok) return false;
-    const ct = res.headers.get('content-type') || '';
-    // Static hosts (Cloudflare Pages etc.) may return index.html on 404
-    if (ct.includes('text/html')) return false;
-    const peek = await res.text();
-    if (peek.trimStart().startsWith('<')) return false;
-    return true;
-  } catch {
-    return false;
-  }
+async function loadBookZip(id) {
+  const res = await fetch(`books/${id}/chapters.zip`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const blob = await res.blob();
+  bookZip = await JSZip.loadAsync(blob);
 }
 
-async function discoverChapterCount() {
-  // Must have at least chapter 1
-  if (!(await chapterExists(1))) return 0;
-
-  // Double until we overshoot
-  let hi = 1;
-  while (await chapterExists(hi * 2)) {
-    hi *= 2;
-    if (hi >= 1024) break; // safety cap
-  }
-
-  // Binary search between hi and hi*2
-  let lo = hi;
-  hi = hi * 2;
-  while (lo < hi - 1) {
-    const mid = (lo + hi) >> 1;
-    if (await chapterExists(mid)) lo = mid;
-    else hi = mid;
-  }
-
-  return lo;
+function discoverChapterCount() {
+  if (!bookZip) return 0;
+  let count = 0;
+  while (bookZip.file(`${count + 1}.txt`)) count++;
+  return count;
 }
 
 // ─── FETCH BOOK DATA ─────────────────────────────────────────
@@ -159,16 +133,9 @@ async function loadChapter(bookMeta, num, restoreScroll = false) {
   history.replaceState(null, '', url);
 
   try {
-    const res = await fetch(`books/${bookId}/${currentChapter}.txt`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    // When a .txt file doesn't exist, Cloudflare Pages (and similar hosts)
-    // return index.html with a 200 OK instead of a 404. We detect this by
-    // checking the Content-Type header and the response body start tag.
-    const contentType = res.headers.get('content-type') || '';
-    const text = await res.text();
-    if (contentType.includes('text/html') || text.trimStart().startsWith('<')) {
-      throw new Error('Got HTML fallback instead of chapter text');
-    }
+    const file = bookZip.file(`${currentChapter}.txt`);
+    if (!file) throw new Error('Chapter not in zip');
+    const text = await file.async('string');
     chapterContent.innerHTML = renderText(text);
   } catch (err) {
     chapterContent.innerHTML = `
@@ -259,7 +226,8 @@ async function init(bookMeta) {
   chapterSelect.innerHTML = '<option disabled>Loading…</option>';
 
   // Discover chapter count from actual files in books/<id>/
-  const discovered = await discoverChapterCount();
+  await loadBookZip(bookId);
+  const discovered = discoverChapterCount(); // now sync
   totalChapters = discovered > 0 ? discovered : 1;
 
   populateChapterSelect();

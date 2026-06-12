@@ -8,5 +8,10 @@
     "id": "alices-adventures-in-wonderland",
     "title": "Alice's Adventures in Wonderland",
     "author": "Lewis Carroll"
+  },
+  {
+    "id": "beyond-good-and-evil",
+    "title": "Beyond Good and Evil",
+    "author": "Friedrich Nietzsche"
   }
 ]
